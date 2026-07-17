@@ -1,0 +1,22 @@
+{
+  "name": "delika-ig-story-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plantilla Remotion para historias diarias de Instagram (1080x1920) - Delika",
+  "scripts": {
+    "start": "remotion studio",
+    "render": "remotion render src/index.ts DailyStory out/daily-story.mp4",
+    "still": "remotion still src/index.ts DailyStory out/daily-story.png"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.208",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.208",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/react": "^18.3.0"
+  }
+}
