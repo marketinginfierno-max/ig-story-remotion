@@ -715,6 +715,15 @@ chico** en vez de mostrar una página, al no encontrar nada que renderizar
 como HTML. Se corrigió cambiando "Root Directory" a `dashboard` en
 Settings → Build and Deployment.
 
+**Segundo bug encadenado con el anterior:** después de corregir "Root
+Directory", el siguiente intento de build falló con
+`No Output Directory named "public" found` — porque mientras el proyecto
+tuvo la raíz mal configurada (`src`), Vercel había detectado "Framework
+Preset: Other" (al no encontrar una app Next.js real ahí) y ese valor
+quedó guardado; cambiar "Root Directory" después no vuelve a correr la
+detección automática. Se corrigió a mano en la misma pantalla, cambiando
+"Framework Preset" a `Next.js`.
+
 ## Desplegar en un hosting con cPanel (alternativa manual)
 
 El usuario tiene además hosting propio (cPanel, con la sección "Node.js" /
