@@ -26,12 +26,13 @@ secciones detrás de un sidebar compartido:
 - **Seguimiento de Competencia** (`/competitors`)
 - **Feed de Noticias** (`/news`)
 
-El **Gestor de Instagram**, **Analítica** y **Calendario de Contenido** ya
-tienen funcionalidad real (ver las secciones dedicadas más abajo); las
-otras dos secciones siguen siendo un placeholder estático (tarjeta
-"Próximamente") — todavía no hay obtención de datos, autenticación ni
-integración con backend. La ruta `/` es una página de resumen con
-tarjetas que enlazan a cada sección.
+El **Gestor de Instagram**, **Analítica**, **Calendario de Contenido** y
+**Seguimiento de Competencia** ya tienen funcionalidad real (ver las
+secciones dedicadas más abajo); **Feed de Noticias** sigue siendo un
+placeholder estático (tarjeta "Próximamente") — todavía no hay obtención
+de datos, autenticación ni integración con backend real en ninguna
+sección. La ruta `/` es una página de resumen con tarjetas que enlazan a
+cada sección.
 
 ## Dónde vive esto en el repositorio
 
@@ -139,7 +140,7 @@ dashboard/
 │   │   ├── instagram/page.tsx    # Gestor de Instagram — funcional (ver sección dedicada)
 │   │   ├── analytics/page.tsx    # Analítica — funcional (ver sección dedicada)
 │   │   ├── calendar/page.tsx     # Calendario de Contenido — funcional (ver sección dedicada)
-│   │   ├── competitors/page.tsx  # placeholder de Seguimiento de Competencia
+│   │   ├── competitors/page.tsx  # Seguimiento de Competencia — funcional (ver sección dedicada)
 │   │   └── news/page.tsx         # placeholder de Feed de Noticias
 │   ├── components/
 │   │   ├── ui/                   # primitivos de shadcn/ui escritos a mano (button, card, badge, separator, dialog, input, textarea, label, select, popover)
@@ -164,19 +165,44 @@ dashboard/
 │   │   │   ├── stat-card.tsx     # tarjeta de estadística (ícono, label, valor, delta)
 │   │   │   ├── bar-chart.tsx     # gráfico de barras SVG hecho a mano (ver "Stack técnico")
 │   │   │   └── analytics-view.tsx # orquestador: header + date picker + stat cards + los dos gráficos
-│   │   └── calendar/             # todo lo específico del Calendario de Contenido (ver sección dedicada)
-│   │       ├── types.ts          # tipo Platform/ContentItem + labels, íconos y color por plataforma
-│   │       ├── seed-items.ts     # contenido de ejemplo, con fechas relativas a "hoy"
-│   │       ├── platform-filter.tsx # fila de botones para filtrar por plataforma (multi-selección)
-│   │       ├── content-chip.tsx  # chip de un item dentro de una celda del calendario
-│   │       ├── day-cell.tsx      # una celda del calendario (número de día + chips + "+N más")
-│   │       ├── month-grid.tsx    # arma la grilla de 6x7 días y los encabezados de la semana
-│   │       ├── day-items-dialog.tsx # diálogo con el detalle completo de un día
-│   │       └── calendar-view.tsx # orquestador: header + navegación de mes + filtro + grilla
+│   │   ├── calendar/             # todo lo específico del Calendario de Contenido (ver sección dedicada)
+│   │   │   ├── types.ts          # tipo Platform/ContentItem + labels, íconos y color por plataforma
+│   │   │   ├── seed-items.ts     # contenido de ejemplo, con fechas relativas a "hoy"
+│   │   │   ├── platform-filter.tsx # fila de botones para filtrar por plataforma (multi-selección)
+│   │   │   ├── content-chip.tsx  # chip de un item dentro de una celda del calendario
+│   │   │   ├── day-cell.tsx      # una celda del calendario (número de día + chips + "+N más")
+│   │   │   ├── month-grid.tsx    # arma la grilla de 6x7 días y los encabezados de la semana
+│   │   │   ├── day-items-dialog.tsx # diálogo con el detalle completo de un día
+│   │   │   └── calendar-view.tsx # orquestador: header + navegación de mes + filtro + grilla
+│   │   └── competitors/          # todo lo específico de Seguimiento de Competencia (ver sección dedicada)
+│   │       ├── types.ts          # tipo Competitor + SortKey/SortState para la tabla
+│   │       ├── mock-data.ts      # genera estadísticas de ejemplo a partir de un hash del handle
+│   │       ├── use-competitors.ts # hook de estado + persistencia en localStorage
+│   │       ├── competitors-table.tsx # tabla ordenable (clic en cualquier columna)
+│   │       ├── growth-delta.tsx  # crecimiento con flecha + color (subida = verde, bajada = roja)
+│   │       ├── add-competitor-dialog.tsx # formulario modal para agregar un handle
+│   │       └── data-source-note.tsx # nota visible en la página sobre dónde conectar datos reales
 │   └── lib/
 │       ├── utils.ts              # cn() — clsx + tailwind-merge
-│       └── date.ts               # helpers de fecha compartidos (addDays, diffInDays, toISODate, today, startOfMonth, addMonths)
+│       ├── date.ts               # helpers de fecha compartidos (addDays, diffInDays, toISODate, today, startOfMonth, addMonths)
+│       ├── random.ts             # hashString + mulberry32 — PRNG con semilla para datos de ejemplo deterministas
+│       ├── format.ts             # formatCompactNumber/formatNumber/formatPercent — formateo de números en español
+│       └── use-local-storage-state.ts # hook genérico de estado + persistencia en localStorage (con hidratación segura)
 ```
+
+**Decisión:** `lib/date.ts`, `lib/random.ts` y `lib/format.ts` empezaron
+como código interno de `analytics/mock-data.ts` y se extrajeron a medida
+que otra sección necesitó lo mismo — no se diseñaron por adelantado. El
+Calendario necesitó los helpers de fecha (no tenía sentido que
+`calendar/` importara desde adentro de `analytics/`), y Seguimiento de
+Competencia necesitó exactamente el mismo generador con semilla
+(`hashString` + `mulberry32`) que ya generaba los datos de ejemplo de
+Analítica, y el mismo patrón de hidratación con `localStorage` que ya
+tenía `use-posts.ts` del Gestor de Instagram (por eso también existe
+`use-local-storage-state.ts`, genérico, y `use-posts.ts` se reescribió
+para usarlo). Si una tercera sección necesita generar datos de ejemplo
+deterministas o persistir estado en `localStorage`, usar estos módulos en
+vez de reinventarlos.
 
 **Decisión:** cada página de sección sigue el mismo patrón de dos piezas —
 `PageHeader` (título + badge "Próximamente" + descripción) seguido de
@@ -421,6 +447,51 @@ que oculta los chips de las plataformas desactivadas en toda la vista.
   como el lugar neutral correcto, y `analytics/` se actualizó para
   importar desde ahí en vez de definirlas.
 
+## Seguimiento de Competencia (`/competitors`)
+
+Cuarta sección con funcionalidad real. Una tabla ordenable (clic en
+cualquier encabezado de columna alterna ascendente/descendente) con
+Handle, Seguidores, Posts recientes (30 días), Frecuencia (por semana),
+Interacción y Crecimiento (30 días) — un botón "Agregar competidor" abre
+un diálogo para sumar un handle nuevo.
+
+- **Sin backend todavía — nota visible en la página, no solo en el
+  código.** **Decisión y por qué:** el usuario pidió explícitamente
+  "note where I would connect a real data source later", lo cual se leyó
+  como "que se vea en la página", no solo como un comentario en el
+  código — alguien mirando el dashboard sin abrir el editor también
+  necesita saber que los números son de ejemplo y dónde se conectaría
+  algo real. Por eso existe `data-source-note.tsx`: una nota en la propia
+  página (no solo en `CLAUDE.md`) que dice explícitamente que las
+  estadísticas son de ejemplo y nombra el archivo exacto
+  (`use-competitors.ts`) donde se generan hoy y donde se pedirían a una
+  fuente real (API de Meta/Instagram, o un servicio de terceros) más
+  adelante.
+- **Estadísticas generadas por hash del handle** (`mock-data.ts`,
+  `generateCompetitorStats`): mismo patrón de `hashString` +
+  `mulberry32` que ya usaba Analítica (ahora en `lib/random.ts`) — así
+  que agregar el mismo handle dos veces (en dos sesiones distintas, por
+  ejemplo) da las mismas estadísticas de partida, en vez de números al
+  azar sin relación entre sí. `recentPosts` se deriva de `postsPerWeek`
+  (con algo de ruido) para que ambos números sean coherentes entre sí en
+  vez de independientes.
+- **Persistencia en `localStorage`**, mismo patrón que el Gestor de
+  Instagram — ver la decisión de arriba sobre `use-local-storage-state.ts`.
+  Los competidores que agregues sobreviven a un refresh de página.
+- **Ordenamiento client-side** (`competitors-table.tsx`): estado
+  `{ key, direction }`, clic en un header ya activo invierte la
+  dirección, clic en uno nuevo usa una dirección por defecto sensata
+  (descendente para las métricas — "el más grande primero" es lo que
+  normalmente se quiere ver; ascendente para el handle, alfabético). No
+  se usó una librería de tablas (TanStack Table, etc.) — para una sola
+  tabla con 6 columnas y sin paginación ni filtros por columna, el
+  `useMemo` + `.sort()` de siempre alcanza; revisar si en algún momento
+  se necesita paginación o edición inline.
+- **Sin eliminar competidores todavía.** Solo se pidió agregar y ver —
+  no hay botón para sacar un handle de la tabla. Si se pide, seguir el
+  mismo patrón de `addCompetitor` en `use-competitors.ts` (un
+  `removeCompetitor` que filtra por `id`).
+
 ## Navegación / comportamiento responsive
 
 - **Escritorio (`md:` en adelante):** un sidebar izquierdo fijo y siempre
@@ -485,6 +556,12 @@ que oculta los chips de las plataformas desactivadas en toda la vista.
   título + nombre de plataforma); en móvil los chips colapsan a solo
   ícono (sin texto truncado a una letra) y tocar el día sigue mostrando
   el detalle completo.
+- Seguimiento de Competencia verificado manualmente en navegador
+  headless: hacer clic en un encabezado de columna ordena la tabla y
+  vuelve a hacer clic invierte el orden; agregar un competidor nuevo lo
+  suma a la tabla con estadísticas coherentes entre sí; el competidor
+  agregado persiste después de recargar la página (confirma
+  `localStorage`); sin errores en consola.
 
 ## Comandos
 

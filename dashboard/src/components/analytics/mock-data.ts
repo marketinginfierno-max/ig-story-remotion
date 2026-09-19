@@ -4,6 +4,7 @@
 // ver CLAUDE.md, sección "Analítica", para el detalle completo.
 
 import { addDays, diffInDays, toISODate } from "@/lib/date";
+import { hashString, mulberry32 } from "@/lib/random";
 
 const ANCHOR_DATE = new Date(Date.UTC(2024, 0, 1));
 const BASE_FOLLOWERS = 18500;
@@ -11,25 +12,6 @@ const BASE_FOLLOWERS = 18500;
 // Domingo(0) .. sábado(6): más alcance/interacción hacia el fin de semana.
 const REACH_DOW_MULTIPLIER = [0.92, 0.95, 1.0, 1.0, 1.05, 1.22, 1.18];
 const ENGAGEMENT_DOW_OFFSET = [-0.2, -0.1, 0, 0.1, 0.3, 0.6, 0.5];
-
-function hashString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0;
-  }
-  return hash;
-}
-
-function mulberry32(seed: number) {
-  let a = seed;
-  return function random() {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 export interface DailyMetrics {
   date: string;
@@ -100,19 +82,4 @@ export function followersAt(date: Date): number {
   return total;
 }
 
-export function formatCompactNumber(value: number): string {
-  if (Math.abs(value) < 10000) {
-    return new Intl.NumberFormat("es").format(Math.round(value));
-  }
-  return new Intl.NumberFormat("es", { notation: "compact", maximumFractionDigits: 1 }).format(
-    value
-  );
-}
-
-export function formatNumber(value: number): string {
-  return new Intl.NumberFormat("es").format(value);
-}
-
-export function formatPercent(value: number): string {
-  return `${new Intl.NumberFormat("es", { maximumFractionDigits: 1 }).format(value)}%`;
-}
+export { formatCompactNumber, formatNumber, formatPercent } from "@/lib/format";
