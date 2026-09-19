@@ -23,13 +23,13 @@ export function MobileNav() {
         <div className="flex items-center gap-2">
           <LayoutDashboard className="h-5 w-5 text-primary" />
           <span className="text-base font-semibold tracking-tight">
-            Content Dashboard
+            Panel de Contenido
           </span>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          aria-label={open ? "Close menu" : "Open menu"}
+          aria-label={open ? "Cerrar menú" : "Abrir menú"}
           onClick={() => setOpen((v) => !v)}
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

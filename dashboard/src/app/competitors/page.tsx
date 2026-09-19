@@ -7,12 +7,12 @@ export default function CompetitorTrackerPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Competitor Tracker"
-        description="Monitor competitor accounts, posting cadence, and campaigns."
+        title="Seguimiento de Competencia"
+        description="Monitorea cuentas de la competencia, su ritmo de publicación y campañas."
       />
       <ComingSoon
         icon={Radar}
-        message="Tracked competitor profiles and their recent activity will live here."
+        message="Aquí vivirán los perfiles de competencia seguidos y su actividad reciente."
       />
     </div>
   );

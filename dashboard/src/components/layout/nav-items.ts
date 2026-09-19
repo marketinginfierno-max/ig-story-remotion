@@ -16,33 +16,33 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   {
-    title: "Instagram Manager",
+    title: "Gestor de Instagram",
     href: "/instagram",
     icon: Camera,
-    description: "Plan, schedule, and publish Instagram content.",
+    description: "Planifica, programa y publica contenido de Instagram.",
   },
   {
-    title: "Analytics",
+    title: "Analítica",
     href: "/analytics",
     icon: BarChart3,
-    description: "Track performance across your channels.",
+    description: "Sigue el rendimiento de todos tus canales.",
   },
   {
-    title: "Content Calendar",
+    title: "Calendario de Contenido",
     href: "/calendar",
     icon: CalendarDays,
-    description: "See everything scheduled at a glance.",
+    description: "Visualiza todo lo programado de un vistazo.",
   },
   {
-    title: "Competitor Tracker",
+    title: "Seguimiento de Competencia",
     href: "/competitors",
     icon: Radar,
-    description: "Keep an eye on what competitors are posting.",
+    description: "Mantente al tanto de lo que publica la competencia.",
   },
   {
-    title: "News Feed",
+    title: "Feed de Noticias",
     href: "/news",
     icon: Newspaper,
-    description: "Stay on top of industry news and trends.",
+    description: "Mantente al día con noticias y tendencias del sector.",
   },
 ];

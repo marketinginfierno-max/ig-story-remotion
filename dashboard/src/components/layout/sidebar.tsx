@@ -16,7 +16,7 @@ export function Sidebar() {
       <div className="flex h-16 items-center gap-2 px-6">
         <LayoutDashboard className="h-5 w-5 text-primary" />
         <span className="text-base font-semibold tracking-tight">
-          Content Dashboard
+          Panel de Contenido
         </span>
       </div>
       <Separator className="bg-sidebar-border" />
@@ -43,7 +43,7 @@ export function Sidebar() {
       </nav>
       <Separator className="bg-sidebar-border" />
       <div className="px-6 py-4 text-xs text-muted-foreground">
-        v0.1.0 &middot; Placeholder build
+        v0.1.0 &middot; Versión de prueba
       </div>
     </aside>
   );

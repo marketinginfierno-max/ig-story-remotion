@@ -7,12 +7,12 @@ export default function InstagramManagerPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Instagram Manager"
-        description="Plan, schedule, and publish Instagram posts, stories, and reels."
+        title="Gestor de Instagram"
+        description="Planifica, programa y publica posts, historias y reels de Instagram."
       />
       <ComingSoon
         icon={Camera}
-        message="Post composer, media library, and scheduling queue will live here."
+        message="Aquí vivirán el compositor de publicaciones, la biblioteca de medios y la cola de programación."
       />
     </div>
   );

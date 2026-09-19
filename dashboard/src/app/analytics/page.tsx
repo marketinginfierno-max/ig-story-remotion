@@ -7,12 +7,12 @@ export default function AnalyticsPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Analytics"
-        description="Track reach, engagement, and growth across your channels."
+        title="Analítica"
+        description="Sigue el alcance, la interacción y el crecimiento de tus canales."
       />
       <ComingSoon
         icon={BarChart3}
-        message="Engagement charts, audience breakdowns, and top-post rankings will live here."
+        message="Aquí vivirán los gráficos de interacción, el desglose de audiencia y el ranking de mejores publicaciones."
       />
     </div>
   );

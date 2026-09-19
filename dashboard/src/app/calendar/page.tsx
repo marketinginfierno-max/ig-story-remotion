@@ -7,12 +7,12 @@ export default function ContentCalendarPage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Content Calendar"
-        description="See everything scheduled across every channel at a glance."
+        title="Calendario de Contenido"
+        description="Visualiza todo lo programado en cada canal de un vistazo."
       />
       <ComingSoon
         icon={CalendarDays}
-        message="A drag-and-drop monthly and weekly calendar view will live here."
+        message="Aquí vivirá una vista de calendario mensual y semanal con arrastrar y soltar."
       />
     </div>
   );

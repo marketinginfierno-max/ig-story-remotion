@@ -17,8 +17,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Content Dashboard",
-  description: "Instagram manager, analytics, calendar, competitor tracker, and news feed.",
+  title: "Panel de Contenido",
+  description:
+    "Gestor de Instagram, analítica, calendario, seguimiento de competencia y feed de noticias.",
 };
 
 export default function RootLayout({
@@ -27,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="es" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

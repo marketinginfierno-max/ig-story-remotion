@@ -14,8 +14,8 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Overview"
-        description="Jump into any section of the content dashboard."
+        title="Resumen"
+        description="Entra a cualquier sección del panel de contenido."
       />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {navItems.map((item) => {

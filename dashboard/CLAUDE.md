@@ -1,169 +1,194 @@
-# Content Dashboard — Project Memory
+# Panel de Contenido — Memoria del Proyecto
 
-This file is the source of truth for how this app is built and why. Keep it
-up to date as decisions change — future work (by Claude or anyone else)
-should read this first.
+Este archivo es la fuente de verdad sobre cómo está construida esta app y por
+qué. Mantenlo actualizado cuando cambien las decisiones — cualquier trabajo
+futuro (de Claude o de cualquier persona) debería leer esto primero.
 
-## What this is
+## Idioma
 
-A placeholder content-operations dashboard with five sections behind a
-shared sidebar:
+**Decisión:** toda la interfaz visible del dashboard, la documentación
+(`README.md`, este archivo) y la comunicación sobre este proyecto son en
+español. Los identificadores de código (nombres de archivos, rutas,
+componentes, variables, nombres de funciones) se mantienen en inglés,
+siguiendo la convención estándar del ecosistema Next.js/React — solo el
+texto que ve la persona usuaria y la documentación están en español.
+Si se agrega texto nuevo a la UI, debe escribirse en español desde el
+principio.
 
-- **Instagram Manager** (`/instagram`)
-- **Analytics** (`/analytics`)
-- **Content Calendar** (`/calendar`)
-- **Competitor Tracker** (`/competitors`)
-- **News Feed** (`/news`)
+## Qué es esto
 
-Every section is currently a static placeholder ("Coming soon" card) — no
-data fetching, auth, or backend integration exists yet. The `/` route is an
-overview page with cards linking into each section.
+Un dashboard de operación de contenido, aún en modo placeholder, con cinco
+secciones detrás de un sidebar compartido:
 
-## Where this lives in the repo
+- **Gestor de Instagram** (`/instagram`)
+- **Analítica** (`/analytics`)
+- **Calendario de Contenido** (`/calendar`)
+- **Seguimiento de Competencia** (`/competitors`)
+- **Feed de Noticias** (`/news`)
 
-This repo (`ig-story-remotion`) originally holds an unrelated Remotion video
-template (`src/`, `remotion.config.ts` at repo root — generates Instagram
-Story videos). The dashboard is a **separate Next.js app** in `dashboard/`
-at the repo root, with its own `package.json`, `node_modules`, and git
-history going forward. **Decision:** keep them as two independent projects
-in one repo rather than merging tooling or converting the Remotion project,
-since they solve unrelated problems (video rendering vs. a web dashboard)
-and have incompatible runtimes. Run all dashboard commands from inside
+Cada sección es actualmente un placeholder estático (tarjeta "Próximamente")
+— todavía no hay obtención de datos, autenticación ni integración con
+backend. La ruta `/` es una página de resumen con tarjetas que enlazan a
+cada sección.
+
+## Dónde vive esto en el repositorio
+
+Este repositorio (`ig-story-remotion`) originalmente contiene una plantilla
+de video de Remotion sin relación con el dashboard (`src/`,
+`remotion.config.ts` en la raíz del repo — genera videos de Instagram
+Stories). El dashboard es una **app de Next.js separada** en `dashboard/`
+en la raíz del repo, con su propio `package.json`, `node_modules` e
+historial de git hacia adelante. **Decisión:** mantenerlos como dos
+proyectos independientes en un mismo repositorio en lugar de fusionar el
+tooling o convertir el proyecto de Remotion, ya que resuelven problemas sin
+relación (renderizado de video vs. un dashboard web) y tienen runtimes
+incompatibles. Todos los comandos del dashboard se ejecutan desde dentro de
 `dashboard/`.
 
-## Tech stack
+## Stack técnico
 
-- **Next.js 14** (App Router, `src/` directory), pinned via
-  `create-next-app@14`. **Decision:** the `latest` tag at the time this was
-  built resolved to Next 16, whose own generated `AGENTS.md` explicitly
-  warns that it has breaking changes vs. general model training data and
-  says to read `node_modules/next/dist/docs/` before writing code. To avoid
-  building on undocumented/unfamiliar APIs, we pinned to the well-established
-  Next 14 App Router conventions instead.
-- **React 18** (matches the Next 14 template; not React 19).
-- **TypeScript**, strict mode (from the `create-next-app` default
-  `tsconfig.json`).
-- **Tailwind CSS v3.4** for styling (not v4 — v4's setup differs
-  meaningfully and v3 is what shadcn/ui's known-good primitives assume).
-- **shadcn/ui components, hand-written (not CLI-generated).** **Decision
-  and why:** the shadcn CLI's registry endpoint (`ui.shadcn.com`) is blocked
-  by this environment's outbound network policy (403 at the proxy level),
-  and the latest CLI (`shadcn@4.x`) also uses a new `--base radix|base|aria`
-  "base-nova" preset system that's a departure from the classic
-  `components.json` format. So the primitives in `src/components/ui/`
-  (`button.tsx`, `card.tsx`, `badge.tsx`, `separator.tsx`) were written by
-  hand, matching the standard/"new-york"-style shadcn source exactly
-  (same variants, same `cva` usage, same `cn()` helper), so they are
-  drop-in compatible if the CLI is ever usable later (e.g.
-  `npx shadcn@2.9.3 add <component>` against the existing
-  `components.json`). A `components.json` is committed so the CLI works
-  immediately if network access to `ui.shadcn.com` is available in the
-  future.
-  - Only `button`, `card`, `badge`, and `separator` exist so far — add more
-    the same way (hand-write matching upstream shadcn source, or run the
-    CLI) as sections gain real functionality.
-- **lucide-react** for icons. **Decision:** the installed version (`^1.x`)
-  removed all brand/logo icons (no `Instagram` icon export) — this is an
-  intentional upstream change, not a bug. The sidebar uses `Camera` for
-  Instagram Manager instead of a literal Instagram glyph.
+- **Next.js 14** (App Router, carpeta `src/`), fijado explícitamente vía
+  `create-next-app@14`. **Decisión:** el tag `latest` en el momento en que
+  se construyó esto resolvía a Next 16, cuyo propio `AGENTS.md` generado
+  advierte explícitamente que tiene cambios que rompen compatibilidad
+  respecto a los datos de entrenamiento del modelo y dice que hay que leer
+  `node_modules/next/dist/docs/` antes de escribir código. Para evitar
+  construir sobre APIs no documentadas o desconocidas, se fijó la versión a
+  las convenciones bien establecidas del App Router de Next 14.
+- **React 18** (coincide con la plantilla de Next 14; no React 19).
+- **TypeScript**, modo estricto (del `tsconfig.json` por defecto de
+  `create-next-app`).
+- **Tailwind CSS v3.4** para estilos (no v4 — la configuración de v4 difiere
+  bastante y v3 es lo que asumen los primitivos ya probados de shadcn/ui).
+- **Componentes shadcn/ui escritos a mano (no generados por el CLI).**
+  **Decisión y por qué:** el endpoint del registro del CLI de shadcn
+  (`ui.shadcn.com`) está bloqueado por la política de red saliente de este
+  entorno (403 a nivel de proxy), y el CLI más reciente (`shadcn@4.x`)
+  además usa un nuevo sistema de presets "base-nova" con
+  `--base radix|base|aria`, que se aparta del formato clásico de
+  `components.json`. Por eso los primitivos en `src/components/ui/`
+  (`button.tsx`, `card.tsx`, `badge.tsx`, `separator.tsx`) se escribieron a
+  mano, replicando exactamente el código fuente estándar/estilo
+  "new-york" de shadcn (mismas variantes, mismo uso de `cva`, mismo
+  helper `cn()`), de modo que sean compatibles si el CLI se puede usar más
+  adelante (por ejemplo `npx shadcn@2.9.3 add <componente>` contra el
+  `components.json` existente). Se dejó un `components.json` en el repo
+  para que el CLI funcione de inmediato si en el futuro hay acceso de red a
+  `ui.shadcn.com`.
+  - Por ahora solo existen `button`, `card`, `badge` y `separator` — agrega
+    más de la misma forma (escribir a mano el código fuente de shadcn
+    correspondiente, o correr el CLI) a medida que las secciones ganen
+    funcionalidad real.
+- **lucide-react** para íconos. **Decisión:** la versión instalada
+  (`^1.x`) eliminó todos los íconos de marcas/logos (no existe un ícono
+  `Instagram` exportado) — es un cambio intencional upstream, no un bug.
+  El sidebar usa `Camera` para el Gestor de Instagram en lugar de un
+  glifo literal de Instagram.
 - **class-variance-authority**, **clsx**, **tailwind-merge**,
-  **tailwindcss-animate** — the standard shadcn/ui variant + class-merging
-  toolchain (`cn()` lives in `src/lib/utils.ts`).
-- **@radix-ui/react-slot**, **@radix-ui/react-separator** — primitives
-  backing the `Button` (`asChild`) and `Separator` components.
-  `@radix-ui/react-tooltip` is installed but not yet used by anything.
+  **tailwindcss-animate** — el stack estándar de variantes y combinación
+  de clases de shadcn/ui (`cn()` vive en `src/lib/utils.ts`).
+- **@radix-ui/react-slot**, **@radix-ui/react-separator** — primitivos
+  detrás de `Button` (`asChild`) y `Separator`. `@radix-ui/react-tooltip`
+  está instalado pero todavía no se usa en ningún lado.
 
-## Dark theme
+## Tema oscuro
 
-**Decision:** dark is the only theme — there is no light mode or theme
-toggle. `<html>` in `src/app/layout.tsx` has a hardcoded `className="dark"`.
-All shadcn color tokens (`--background`, `--foreground`, `--card`,
-`--primary`, `--border`, plus dashboard-specific `--sidebar-*` tokens) are
-defined once under `:root` in `src/app/globals.css` using dark values —
-there's no separate `.light`/`.dark` variable split to keep in sync, since
-light mode doesn't exist. If a light mode is ever added, split these into
-`.dark`/`:root` blocks and wire up a theme provider (e.g. `next-themes`)
-first.
+**Decisión:** el tema oscuro es el único tema — no hay modo claro ni
+selector de tema. El `<html>` en `src/app/layout.tsx` tiene
+`className="dark"` fijo, y `lang="es"`. Todos los tokens de color de
+shadcn (`--background`, `--foreground`, `--card`, `--primary`, `--border`,
+además de los tokens propios del dashboard `--sidebar-*`) se definen una
+sola vez bajo `:root` en `src/app/globals.css` usando valores oscuros — no
+hay una separación en bloques `.light`/`.dark` que mantener sincronizada,
+porque el modo claro no existe. Si en algún momento se agrega modo claro,
+primero hay que separar estas variables en bloques `.dark`/`:root` y
+conectar un theme provider (por ejemplo `next-themes`).
 
-## Folder structure
+## Estructura de carpetas
 
 ```
 dashboard/
-├── CLAUDE.md                     # this file
-├── components.json               # shadcn/ui config (style: new-york, base: neutral)
-├── tailwind.config.ts            # shadcn design tokens (HSL CSS vars) + tailwindcss-animate
+├── CLAUDE.md                     # este archivo
+├── components.json               # configuración de shadcn/ui (style: new-york, base: neutral)
+├── tailwind.config.ts            # tokens de diseño de shadcn (variables CSS en HSL) + tailwindcss-animate
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx            # root shell: <html class="dark">, renders Sidebar + MobileNav + <main>
-│   │   ├── page.tsx               # "/" — overview page, cards linking to each section
-│   │   ├── globals.css           # Tailwind directives + shadcn CSS variables (dark only)
-│   │   ├── instagram/page.tsx    # Instagram Manager placeholder
-│   │   ├── analytics/page.tsx    # Analytics placeholder
-│   │   ├── calendar/page.tsx     # Content Calendar placeholder
-│   │   ├── competitors/page.tsx  # Competitor Tracker placeholder
-│   │   └── news/page.tsx         # News Feed placeholder
+│   │   ├── layout.tsx            # shell raíz: <html lang="es" class="dark">, renderiza Sidebar + MobileNav + <main>
+│   │   ├── page.tsx               # "/" — página de resumen, tarjetas que enlazan a cada sección
+│   │   ├── globals.css           # directivas de Tailwind + variables CSS de shadcn (solo oscuro)
+│   │   ├── instagram/page.tsx    # placeholder de Gestor de Instagram
+│   │   ├── analytics/page.tsx    # placeholder de Analítica
+│   │   ├── calendar/page.tsx     # placeholder de Calendario de Contenido
+│   │   ├── competitors/page.tsx  # placeholder de Seguimiento de Competencia
+│   │   └── news/page.tsx         # placeholder de Feed de Noticias
 │   ├── components/
-│   │   ├── ui/                   # hand-written shadcn/ui primitives (button, card, badge, separator)
+│   │   ├── ui/                   # primitivos de shadcn/ui escritos a mano (button, card, badge, separator)
 │   │   └── layout/
-│   │       ├── nav-items.ts      # single source of truth for sidebar/mobile-nav links (title, href, icon, description)
-│   │       ├── sidebar.tsx       # fixed desktop sidebar (md+), active-link highlighting via usePathname
-│   │       ├── mobile-nav.tsx    # top bar + toggle nav shown below md breakpoint
-│   │       ├── page-header.tsx   # shared "<Title> [Placeholder badge] + description" header for section pages
-│   │       └── coming-soon.tsx   # shared dashed-card placeholder body for section pages
+│   │       ├── nav-items.ts      # única fuente de verdad para los links del sidebar/menú móvil (title, href, icon, description)
+│   │       ├── sidebar.tsx       # sidebar fijo de escritorio (md+), resalta el link activo vía usePathname
+│   │       ├── mobile-nav.tsx    # barra superior + menú desplegable que se muestra por debajo del breakpoint md
+│   │       ├── page-header.tsx   # encabezado compartido "<Título> [badge Próximamente] + descripción" para las páginas de sección
+│   │       └── coming-soon.tsx   # cuerpo placeholder compartido (tarjeta punteada) para las páginas de sección
 │   └── lib/
 │       └── utils.ts              # cn() — clsx + tailwind-merge
 ```
 
-**Decision:** every section page follows the same two-piece pattern —
-`PageHeader` (title + "Placeholder" badge + description) followed by
-`ComingSoon` (icon + one-line description of what will eventually live
-there). This keeps the five placeholder pages trivial to extend later:
-when a section gets real functionality, replace the `<ComingSoon />` call
-with real content and leave `PageHeader` as-is.
+**Decisión:** cada página de sección sigue el mismo patrón de dos piezas —
+`PageHeader` (título + badge "Próximamente" + descripción) seguido de
+`ComingSoon` (ícono + una línea describiendo qué vivirá ahí eventualmente).
+Esto hace que las cinco páginas placeholder sean triviales de extender
+después: cuando una sección tenga funcionalidad real, se reemplaza el
+`<ComingSoon />` por contenido real y se deja `PageHeader` tal cual.
 
-**Decision:** `navItems` in `nav-items.ts` is the single source of truth for
-the sidebar — both `sidebar.tsx` (desktop) and `mobile-nav.tsx` (mobile)
-import it, so adding/reordering/renaming a section only requires editing
-that one array.
+**Decisión:** `navItems` en `nav-items.ts` es la única fuente de verdad
+para el sidebar — tanto `sidebar.tsx` (escritorio) como `mobile-nav.tsx`
+(móvil) lo importan, así que agregar/reordenar/renombrar una sección solo
+requiere editar ese arreglo.
 
-## Navigation / responsive behavior
+## Navegación / comportamiento responsive
 
-- **Desktop (`md:` and up):** a fixed, always-visible left sidebar
-  (`src/components/layout/sidebar.tsx`), 16rem (`w-64`) wide. `<main>` gets
-  `md:pl-64` to sit next to it.
-- **Mobile (below `md`):** the fixed sidebar is hidden (`hidden md:flex`);
-  instead `mobile-nav.tsx` renders a top bar with a hamburger toggle that
-  expands an inline nav list. **Decision:** this is a plain `useState`
-  toggle, not a shadcn `Sheet`/Radix `Dialog` — kept dependency-free since
-  a full slide-in drawer wasn't needed for placeholder pages. Revisit if
-  the mobile nav needs to overlay content, trap focus, etc.
-- Active link state is determined by `usePathname()` (`pathname === href`
-  or a sub-route) in both nav components.
+- **Escritorio (`md:` en adelante):** un sidebar izquierdo fijo y siempre
+  visible (`src/components/layout/sidebar.tsx`), de 16rem (`w-64`) de
+  ancho. El `<main>` recibe `md:pl-64` para ubicarse junto a él.
+- **Móvil (por debajo de `md`):** el sidebar fijo se oculta
+  (`hidden md:flex`); en su lugar, `mobile-nav.tsx` renderiza una barra
+  superior con un botón de menú (hamburguesa) que despliega una lista de
+  navegación en línea. **Decisión:** esto es un simple toggle con
+  `useState`, no un `Sheet` de shadcn ni un `Dialog` de Radix — se
+  mantuvo sin dependencias extra porque no se necesitaba un drawer
+  deslizante completo para páginas placeholder. Revisar esto si el menú
+  móvil necesita superponerse al contenido, atrapar el foco, etc.
+- El estado de link activo se determina con `usePathname()`
+  (`pathname === href` o una subruta) en ambos componentes de navegación.
 
-## Known constraints / environment notes
+## Limitaciones / notas del entorno
 
-- Package installs go through `registry.npmjs.org`, which this environment
-  allow-lists directly (not proxied) — `npm install` works normally.
-- `ui.shadcn.com` (the shadcn/ui component registry) is **blocked** by the
-  environment's outbound proxy policy — do not rely on `npx shadcn add ...`
-  working; write new primitives by hand against `components.json`'s config
-  (style: `new-york`, base color: `neutral`, css variables: on) instead.
-- `npm audit` reports pre-existing vulnerabilities inherited from the
-  `create-next-app@14` template's own devDependencies (old `eslint`/`glob`
-  transitive deps). Not addressed here — fixing them means upgrading
-  `eslint`/`eslint-config-next` majors, which is out of scope for scaffolding.
+- Las instalaciones de paquetes pasan por `registry.npmjs.org`, que este
+  entorno permite acceder directamente (sin pasar por el proxy) — `npm
+  install` funciona con normalidad.
+- `ui.shadcn.com` (el registro de componentes de shadcn/ui) está
+  **bloqueado** por la política de proxy saliente del entorno — no asumir
+  que `npx shadcn add ...` va a funcionar; para agregar primitivos nuevos,
+  escribirlos a mano siguiendo la configuración de `components.json`
+  (style: `new-york`, base color: `neutral`, css variables: activadas).
+- `npm audit` reporta vulnerabilidades preexistentes heredadas de las
+  propias devDependencies de la plantilla `create-next-app@14` (deps
+  transitivas antiguas de `eslint`/`glob`). No se abordaron aquí —
+  arreglarlas implica subir versiones mayores de `eslint`/
+  `eslint-config-next`, lo cual está fuera del alcance del scaffolding.
 
-## Verified working
+## Verificado y funcionando
 
-- `npm run build` — production build succeeds, all 5 section routes plus
-  `/` prerender as static pages.
-- `npm run lint` — no ESLint warnings or errors.
-- `npx tsc --noEmit` — no type errors.
-- Manually verified in a headless browser: sidebar renders, active-link
-  highlighting works when navigating between sections, dark theme applies,
-  and the mobile breakpoint correctly swaps to the hamburger top bar.
+- `npm run build` — el build de producción funciona, las 5 rutas de
+  sección más `/` se prerenderizan como páginas estáticas.
+- `npm run lint` — sin advertencias ni errores de ESLint.
+- `npx tsc --noEmit` — sin errores de tipos.
+- Verificado manualmente en un navegador headless: el sidebar se renderiza,
+  el resaltado del link activo funciona al navegar entre secciones, el
+  tema oscuro se aplica correctamente, y el breakpoint móvil cambia
+  correctamente a la barra superior con menú hamburguesa.
 
-## Commands
+## Comandos
 
 ```bash
 cd dashboard
