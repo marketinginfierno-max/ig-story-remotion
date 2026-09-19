@@ -26,10 +26,11 @@ secciones detrás de un sidebar compartido:
 - **Seguimiento de Competencia** (`/competitors`)
 - **Feed de Noticias** (`/news`)
 
-Cada sección es actualmente un placeholder estático (tarjeta "Próximamente")
-— todavía no hay obtención de datos, autenticación ni integración con
-backend. La ruta `/` es una página de resumen con tarjetas que enlazan a
-cada sección.
+El **Gestor de Instagram** ya tiene funcionalidad real (ver la sección
+dedicada más abajo); las otras cuatro secciones siguen siendo un
+placeholder estático (tarjeta "Próximamente") — todavía no hay obtención
+de datos, autenticación ni integración con backend. La ruta `/` es una
+página de resumen con tarjetas que enlazan a cada sección.
 
 ## Dónde vive esto en el repositorio
 
@@ -67,7 +68,8 @@ incompatibles. Todos los comandos del dashboard se ejecutan desde dentro de
   además usa un nuevo sistema de presets "base-nova" con
   `--base radix|base|aria`, que se aparta del formato clásico de
   `components.json`. Por eso los primitivos en `src/components/ui/`
-  (`button.tsx`, `card.tsx`, `badge.tsx`, `separator.tsx`) se escribieron a
+  (`button.tsx`, `card.tsx`, `badge.tsx`, `separator.tsx`, `dialog.tsx`,
+  `input.tsx`, `textarea.tsx`, `label.tsx`, `select.tsx`) se escribieron a
   mano, replicando exactamente el código fuente estándar/estilo
   "new-york" de shadcn (mismas variantes, mismo uso de `cva`, mismo
   helper `cn()`), de modo que sean compatibles si el CLI se puede usar más
@@ -75,10 +77,9 @@ incompatibles. Todos los comandos del dashboard se ejecutan desde dentro de
   `components.json` existente). Se dejó un `components.json` en el repo
   para que el CLI funcione de inmediato si en el futuro hay acceso de red a
   `ui.shadcn.com`.
-  - Por ahora solo existen `button`, `card`, `badge` y `separator` — agrega
-    más de la misma forma (escribir a mano el código fuente de shadcn
-    correspondiente, o correr el CLI) a medida que las secciones ganen
-    funcionalidad real.
+  - Agrega componentes nuevos de la misma forma (escribir a mano el código
+    fuente de shadcn correspondiente, o correr el CLI si hay acceso de red)
+    a medida que las secciones ganen funcionalidad real.
 - **lucide-react** para íconos. **Decisión:** la versión instalada
   (`^1.x`) eliminó todos los íconos de marcas/logos (no existe un ícono
   `Instagram` exportado) — es un cambio intencional upstream, no un bug.
@@ -87,9 +88,13 @@ incompatibles. Todos los comandos del dashboard se ejecutan desde dentro de
 - **class-variance-authority**, **clsx**, **tailwind-merge**,
   **tailwindcss-animate** — el stack estándar de variantes y combinación
   de clases de shadcn/ui (`cn()` vive en `src/lib/utils.ts`).
-- **@radix-ui/react-slot**, **@radix-ui/react-separator** — primitivos
-  detrás de `Button` (`asChild`) y `Separator`. `@radix-ui/react-tooltip`
-  está instalado pero todavía no se usa en ningún lado.
+- **@radix-ui/react-slot**, **@radix-ui/react-separator**,
+  **@radix-ui/react-dialog**, **@radix-ui/react-label**,
+  **@radix-ui/react-select** — primitivos detrás de `Button` (`asChild`),
+  `Separator`, `Dialog` (el formulario de nueva publicación), `Label` y
+  `Select` (los dropdowns de tipo/estado en ese formulario).
+  `@radix-ui/react-tooltip` está instalado pero todavía no se usa en
+  ningún lado.
 
 ## Tema oscuro
 
@@ -116,19 +121,27 @@ dashboard/
 │   │   ├── layout.tsx            # shell raíz: <html lang="es" class="dark">, renderiza Sidebar + MobileNav + <main>
 │   │   ├── page.tsx               # "/" — página de resumen, tarjetas que enlazan a cada sección
 │   │   ├── globals.css           # directivas de Tailwind + variables CSS de shadcn (solo oscuro)
-│   │   ├── instagram/page.tsx    # placeholder de Gestor de Instagram
+│   │   ├── instagram/page.tsx    # Gestor de Instagram — funcional (ver sección dedicada)
 │   │   ├── analytics/page.tsx    # placeholder de Analítica
 │   │   ├── calendar/page.tsx     # placeholder de Calendario de Contenido
 │   │   ├── competitors/page.tsx  # placeholder de Seguimiento de Competencia
 │   │   └── news/page.tsx         # placeholder de Feed de Noticias
 │   ├── components/
-│   │   ├── ui/                   # primitivos de shadcn/ui escritos a mano (button, card, badge, separator)
-│   │   └── layout/
-│   │       ├── nav-items.ts      # única fuente de verdad para los links del sidebar/menú móvil (title, href, icon, description)
-│   │       ├── sidebar.tsx       # sidebar fijo de escritorio (md+), resalta el link activo vía usePathname
-│   │       ├── mobile-nav.tsx    # barra superior + menú desplegable que se muestra por debajo del breakpoint md
-│   │       ├── page-header.tsx   # encabezado compartido "<Título> [badge Próximamente] + descripción" para las páginas de sección
-│   │       └── coming-soon.tsx   # cuerpo placeholder compartido (tarjeta punteada) para las páginas de sección
+│   │   ├── ui/                   # primitivos de shadcn/ui escritos a mano (button, card, badge, separator, dialog, input, textarea, label, select)
+│   │   ├── layout/
+│   │   │   ├── nav-items.ts      # única fuente de verdad para los links del sidebar/menú móvil (title, href, icon, description)
+│   │   │   ├── sidebar.tsx       # sidebar fijo de escritorio (md+), resalta el link activo vía usePathname
+│   │   │   ├── mobile-nav.tsx    # barra superior + menú desplegable que se muestra por debajo del breakpoint md
+│   │   │   ├── page-header.tsx   # encabezado compartido "<Título> [badge opcional] + descripción" para las páginas
+│   │   │   └── coming-soon.tsx   # cuerpo placeholder compartido (tarjeta punteada) para las páginas sin funcionalidad aún
+│   │   └── instagram/            # todo lo específico del Gestor de Instagram (ver sección dedicada)
+│   │       ├── types.ts          # tipos Post/PostType/PostStatus + labels e íconos en español
+│   │       ├── seed-posts.ts     # publicaciones de ejemplo iniciales
+│   │       ├── use-posts.ts      # hook de estado + persistencia en localStorage
+│   │       ├── board.tsx         # orquestador: header + botón "Nueva publicación" + columnas
+│   │       ├── status-column.tsx # una columna del tablero (encabezado + tarjetas de ese estado)
+│   │       ├── post-card.tsx     # tarjeta individual de una publicación
+│   │       └── new-post-dialog.tsx # formulario modal para crear una publicación
 │   └── lib/
 │       └── utils.ts              # cn() — clsx + tailwind-merge
 ```
@@ -144,6 +157,76 @@ después: cuando una sección tenga funcionalidad real, se reemplaza el
 para el sidebar — tanto `sidebar.tsx` (escritorio) como `mobile-nav.tsx`
 (móvil) lo importan, así que agregar/reordenar/renombrar una sección solo
 requiere editar ese arreglo.
+
+**Decisión:** `PageHeader` recibe un `badge` opcional (antes era fijo,
+siempre mostraba "Próximamente"). Las cuatro páginas que siguen siendo
+placeholder pasan `badge="Próximamente"` explícitamente; el Gestor de
+Instagram (con funcionalidad real) y la página de resumen no pasan badge,
+así que no se muestra ninguno.
+
+## Gestor de Instagram (`/instagram`)
+
+Primera sección con funcionalidad real, no placeholder. Es un tablero
+estilo kanban: publicaciones agrupadas en columnas por estado, con un
+diálogo para crear publicaciones nuevas.
+
+- **Modelo de datos** (`src/components/instagram/types.ts`):
+  ```ts
+  interface Post {
+    id: string;
+    caption: string;
+    type: "reel" | "carousel" | "story";
+    status: "idea" | "draft" | "ready" | "scheduled" | "posted";
+    scheduledDate: string | null; // "YYYY-MM-DD" o null
+    createdAt: string; // ISO timestamp
+  }
+  ```
+  Las etiquetas visibles (`POST_TYPE_LABELS`, `POST_STATUS_LABELS`) están
+  en español aunque los valores internos (`"reel"`, `"idea"`, etc.) se
+  mantienen en inglés — son claves de código, no texto de UI.
+- **Sin backend todavía — persistencia en `localStorage`.**
+  **Decisión y por qué:** el dashboard no tiene backend ni base de datos
+  configurados en este punto, pero "déjame agregar una publicación" implica
+  que lo agregado sobreviva a un refresh de página. `use-posts.ts` guarda
+  el arreglo de publicaciones en `localStorage` bajo la clave
+  `dashboard.instagram.posts`. El hook usa dos `useEffect` con una bandera
+  `hydrated`: el primero carga desde `localStorage` una sola vez al montar
+  (y solo entonces marca `hydrated = true`); el segundo solo escribe a
+  `localStorage` cuando `hydrated` ya es `true`. Esto evita el bug típico
+  de que el efecto de guardado se dispare con el estado semilla ANTES de
+  que el efecto de carga alcance a leer lo ya guardado, lo que borraría
+  datos reales del usuario. El estado inicial (`SEED_POSTS` en
+  `seed-posts.ts`) es el que se renderiza en el server, así que no hay
+  mismatch de hidratación de React — la lectura real de `localStorage`
+  ocurre después del montaje, en el cliente.
+  - Si más adelante se conecta una base de datos o una API real,
+    `use-posts.ts` es el único lugar que hay que cambiar — el resto de los
+    componentes (`board.tsx`, `status-column.tsx`, `post-card.tsx`,
+    `new-post-dialog.tsx`) solo conocen `posts` y `addPost`, no de dónde
+    vienen.
+- **Layout tipo kanban** (`board.tsx` + `status-column.tsx`): una columna
+  por estado, en el orden fijo `POST_STATUS_ORDER` (idea → borrador →
+  listo → programado → publicado). En pantallas chicas (`<sm`) las
+  columnas son un `flex` con scroll horizontal (`overflow-x-auto`, cada
+  columna `w-72 shrink-0`); desde `sm:` para arriba pasa a `grid` (2
+  columnas en `sm`, 5 en `lg`). Cada columna muestra su conteo de
+  publicaciones y, si está vacía, un mensaje "Sin publicaciones" en vez de
+  quedar en blanco.
+- **Nueva publicación** (`new-post-dialog.tsx`): un `Dialog` de shadcn/ui
+  con un formulario controlado — `Textarea` para el caption (validación
+  mínima: no puede estar vacío), `Select` para tipo de publicación y
+  estado, e `Input type="date"` nativo para la fecha programada
+  (opcional). **Decisión:** se usó un `<input type="date">` nativo en vez
+  de construir un date-picker con Radix Popover + Calendar — es
+  suficiente para este caso de uso y evita agregar `react-day-picker` u
+  otra dependencia solo para esto. La publicación nueva se agrega al
+  principio del arreglo (`addPost` hace `[newPost, ...prev]`), por lo que
+  aparece primero en su columna.
+- **Íconos por tipo** (`POST_TYPE_ICONS` en `types.ts`): `Clapperboard`
+  para reel, `GalleryHorizontal` para carrusel, `CircleDashed` para
+  historia — elegidos porque, igual que con `Instagram` en el sidebar,
+  `lucide-react` no tiene íconos de marca para "reel" o "story" de
+  Instagram.
 
 ## Navegación / comportamiento responsive
 
@@ -187,6 +270,12 @@ requiere editar ese arreglo.
   el resaltado del link activo funciona al navegar entre secciones, el
   tema oscuro se aplica correctamente, y el breakpoint móvil cambia
   correctamente a la barra superior con menú hamburguesa.
+- Gestor de Instagram verificado manualmente en navegador headless: abrir
+  el diálogo, llenar caption/tipo/estado/fecha y enviar agrega la tarjeta
+  a la columna correcta; la publicación persiste después de recargar la
+  página (confirma que la persistencia en `localStorage` funciona); el
+  layout responde bien tanto en escritorio (grid de 5 columnas) como en
+  móvil (scroll horizontal de columnas).
 
 ## Comandos
 

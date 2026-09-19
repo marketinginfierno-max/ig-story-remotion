@@ -1,0 +1,60 @@
+import type { Post } from "./types";
+
+export const SEED_POSTS: Post[] = [
+  {
+    id: "seed-1",
+    caption: "Detrás de cámaras del rodaje de la nueva campaña de verano.",
+    type: "reel",
+    status: "idea",
+    scheduledDate: null,
+    createdAt: "2026-09-01T10:00:00.000Z",
+  },
+  {
+    id: "seed-2",
+    caption: "5 tips rápidos para aprovechar el fin de semana largo.",
+    type: "carousel",
+    status: "idea",
+    scheduledDate: null,
+    createdAt: "2026-09-02T10:00:00.000Z",
+  },
+  {
+    id: "seed-3",
+    caption: "Encuesta: ¿cuál sabor nuevo probamos primero?",
+    type: "story",
+    status: "draft",
+    scheduledDate: null,
+    createdAt: "2026-09-03T10:00:00.000Z",
+  },
+  {
+    id: "seed-4",
+    caption: "Testimonio de cliente + antes/después del producto.",
+    type: "carousel",
+    status: "ready",
+    scheduledDate: null,
+    createdAt: "2026-09-05T10:00:00.000Z",
+  },
+  {
+    id: "seed-5",
+    caption: "Lanzamiento oficial de la colección de primavera.",
+    type: "reel",
+    status: "scheduled",
+    scheduledDate: "2026-09-25",
+    createdAt: "2026-09-06T10:00:00.000Z",
+  },
+  {
+    id: "seed-6",
+    caption: "Recordatorio de horario especial por feriado.",
+    type: "story",
+    status: "scheduled",
+    scheduledDate: "2026-09-22",
+    createdAt: "2026-09-07T10:00:00.000Z",
+  },
+  {
+    id: "seed-7",
+    caption: "Resumen del evento de la semana pasada con el equipo.",
+    type: "carousel",
+    status: "posted",
+    scheduledDate: "2026-09-10",
+    createdAt: "2026-09-10T10:00:00.000Z",
+  },
+];

@@ -9,6 +9,7 @@ export default function AnalyticsPage() {
       <PageHeader
         title="Analítica"
         description="Sigue el alcance, la interacción y el crecimiento de tus canales."
+        badge="Próximamente"
       />
       <ComingSoon
         icon={BarChart3}

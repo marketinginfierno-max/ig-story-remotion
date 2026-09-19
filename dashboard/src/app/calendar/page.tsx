@@ -9,6 +9,7 @@ export default function ContentCalendarPage() {
       <PageHeader
         title="Calendario de Contenido"
         description="Visualiza todo lo programado en cada canal de un vistazo."
+        badge="Próximamente"
       />
       <ComingSoon
         icon={CalendarDays}

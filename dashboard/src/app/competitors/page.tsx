@@ -9,6 +9,7 @@ export default function CompetitorTrackerPage() {
       <PageHeader
         title="Seguimiento de Competencia"
         description="Monitorea cuentas de la competencia, su ritmo de publicación y campañas."
+        badge="Próximamente"
       />
       <ComingSoon
         icon={Radar}

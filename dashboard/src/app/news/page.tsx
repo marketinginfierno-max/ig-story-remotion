@@ -9,6 +9,7 @@ export default function NewsFeedPage() {
       <PageHeader
         title="Feed de Noticias"
         description="Mantente al día con noticias del sector, novedades de plataformas y tendencias."
+        badge="Próximamente"
       />
       <ComingSoon
         icon={Newspaper}
