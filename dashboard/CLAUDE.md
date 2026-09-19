@@ -704,6 +704,17 @@ suficiente, no hace falta que sea "production" formalmente. Si más
 adelante se quiere una URL fija de producción, sea fusionando esta rama a
 `main` o configurando el production branch si aparece esa opción.
 
+**Bug real durante la configuración:** "Root Directory" quedó guardado
+como `src` en vez de `dashboard` (probablemente un autocompletado de
+Vercel al escanear el repo, ya que hay una carpeta `src/` en la raíz del
+repo — la del proyecto de Remotion, sin relación). Con `src` como raíz,
+Vercel tomaba el `src/` del proyecto de Remotion (que no tiene
+`package.json` propio ni es una app web), y el resultado visible era una
+vista previa en blanco y que el navegador **descargaba un archivo
+chico** en vez de mostrar una página, al no encontrar nada que renderizar
+como HTML. Se corrigió cambiando "Root Directory" a `dashboard` en
+Settings → Build and Deployment.
+
 ## Desplegar en un hosting con cPanel (alternativa manual)
 
 El usuario tiene además hosting propio (cPanel, con la sección "Node.js" /
