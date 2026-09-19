@@ -26,9 +26,9 @@ secciones detrás de un sidebar compartido:
 - **Seguimiento de Competencia** (`/competitors`)
 - **Feed de Noticias** (`/news`)
 
-El **Gestor de Instagram** ya tiene funcionalidad real (ver la sección
-dedicada más abajo); las otras cuatro secciones siguen siendo un
-placeholder estático (tarjeta "Próximamente") — todavía no hay obtención
+El **Gestor de Instagram** y **Analítica** ya tienen funcionalidad real (ver
+las secciones dedicadas más abajo); las otras tres secciones siguen siendo
+un placeholder estático (tarjeta "Próximamente") — todavía no hay obtención
 de datos, autenticación ni integración con backend. La ruta `/` es una
 página de resumen con tarjetas que enlazan a cada sección.
 
@@ -90,11 +90,25 @@ incompatibles. Todos los comandos del dashboard se ejecutan desde dentro de
   de clases de shadcn/ui (`cn()` vive en `src/lib/utils.ts`).
 - **@radix-ui/react-slot**, **@radix-ui/react-separator**,
   **@radix-ui/react-dialog**, **@radix-ui/react-label**,
-  **@radix-ui/react-select** — primitivos detrás de `Button` (`asChild`),
-  `Separator`, `Dialog` (el formulario de nueva publicación), `Label` y
-  `Select` (los dropdowns de tipo/estado en ese formulario).
+  **@radix-ui/react-select**, **@radix-ui/react-popover** — primitivos
+  detrás de `Button` (`asChild`), `Separator`, `Dialog` (el formulario de
+  nueva publicación), `Label`, `Select` (los dropdowns de ese formulario)
+  y `Popover` (el selector de rango de fechas de Analítica).
   `@radix-ui/react-tooltip` está instalado pero todavía no se usa en
-  ningún lado.
+  ningún lado (los tooltips de los gráficos de Analítica son un tooltip
+  hecho a mano, no este componente — ver la sección de Analítica).
+- **Sin librería de gráficos.** **Decisión y por qué:** los gráficos de
+  barras de Analítica son SVG escrito a mano
+  (`src/components/analytics/bar-chart.tsx`), no Recharts/Chart.js/etc.
+  Se siguió la skill `dataviz` de Claude, que enseña a construir cada
+  pieza (barras, ejes, tooltip, vista de tabla) en HTML/SVG plano para
+  tener control exacto sobre el spec de marcas (barras finas, extremo
+  superior redondeado a 4px y cuadrado en la base, gap de 2px, tooltip
+  accesible por hover/foco) en vez de pelear con la temización de una
+  librería de terceros para lograr lo mismo. Si el dashboard necesita
+  gráficos más complejos más adelante (líneas multi-serie, áreas
+  apiladas, heatmaps), evaluar entonces si conviene sumar una librería —
+  para dos gráficos de barras de una sola serie no se justificaba.
 
 ## Tema oscuro
 
@@ -122,26 +136,33 @@ dashboard/
 │   │   ├── page.tsx               # "/" — página de resumen, tarjetas que enlazan a cada sección
 │   │   ├── globals.css           # directivas de Tailwind + variables CSS de shadcn (solo oscuro)
 │   │   ├── instagram/page.tsx    # Gestor de Instagram — funcional (ver sección dedicada)
-│   │   ├── analytics/page.tsx    # placeholder de Analítica
+│   │   ├── analytics/page.tsx    # Analítica — funcional (ver sección dedicada)
 │   │   ├── calendar/page.tsx     # placeholder de Calendario de Contenido
 │   │   ├── competitors/page.tsx  # placeholder de Seguimiento de Competencia
 │   │   └── news/page.tsx         # placeholder de Feed de Noticias
 │   ├── components/
-│   │   ├── ui/                   # primitivos de shadcn/ui escritos a mano (button, card, badge, separator, dialog, input, textarea, label, select)
+│   │   ├── ui/                   # primitivos de shadcn/ui escritos a mano (button, card, badge, separator, dialog, input, textarea, label, select, popover)
 │   │   ├── layout/
 │   │   │   ├── nav-items.ts      # única fuente de verdad para los links del sidebar/menú móvil (title, href, icon, description)
 │   │   │   ├── sidebar.tsx       # sidebar fijo de escritorio (md+), resalta el link activo vía usePathname
 │   │   │   ├── mobile-nav.tsx    # barra superior + menú desplegable que se muestra por debajo del breakpoint md
 │   │   │   ├── page-header.tsx   # encabezado compartido "<Título> [badge opcional] + descripción" para las páginas
 │   │   │   └── coming-soon.tsx   # cuerpo placeholder compartido (tarjeta punteada) para las páginas sin funcionalidad aún
-│   │   └── instagram/            # todo lo específico del Gestor de Instagram (ver sección dedicada)
-│   │       ├── types.ts          # tipos Post/PostType/PostStatus + labels e íconos en español
-│   │       ├── seed-posts.ts     # publicaciones de ejemplo iniciales
-│   │       ├── use-posts.ts      # hook de estado + persistencia en localStorage
-│   │       ├── board.tsx         # orquestador: header + botón "Nueva publicación" + columnas
-│   │       ├── status-column.tsx # una columna del tablero (encabezado + tarjetas de ese estado)
-│   │       ├── post-card.tsx     # tarjeta individual de una publicación
-│   │       └── new-post-dialog.tsx # formulario modal para crear una publicación
+│   │   ├── instagram/            # todo lo específico del Gestor de Instagram (ver sección dedicada)
+│   │   │   ├── types.ts          # tipos Post/PostType/PostStatus + labels e íconos en español
+│   │   │   ├── seed-posts.ts     # publicaciones de ejemplo iniciales
+│   │   │   ├── use-posts.ts      # hook de estado + persistencia en localStorage
+│   │   │   ├── board.tsx         # orquestador: header + botón "Nueva publicación" + columnas
+│   │   │   ├── status-column.tsx # una columna del tablero (encabezado + tarjetas de ese estado)
+│   │   │   ├── post-card.tsx     # tarjeta individual de una publicación
+│   │   │   └── new-post-dialog.tsx # formulario modal para crear una publicación
+│   │   └── analytics/            # todo lo específico de Analítica (ver sección dedicada)
+│   │       ├── mock-data.ts      # generador de datos de ejemplo deterministas (sin backend todavía)
+│   │       ├── date-range.ts     # presets de rango de fechas + cálculo del período anterior
+│   │       ├── date-range-picker.tsx # popover con presets + rango personalizado
+│   │       ├── stat-card.tsx     # tarjeta de estadística (ícono, label, valor, delta)
+│   │       ├── bar-chart.tsx     # gráfico de barras SVG hecho a mano (ver "Stack técnico")
+│   │       └── analytics-view.tsx # orquestador: header + date picker + stat cards + los dos gráficos
 │   └── lib/
 │       └── utils.ts              # cn() — clsx + tailwind-merge
 ```
@@ -228,6 +249,92 @@ diálogo para crear publicaciones nuevas.
   `lucide-react` no tiene íconos de marca para "reel" o "story" de
   Instagram.
 
+## Analítica (`/analytics`)
+
+Segunda sección con funcionalidad real. Cuatro tarjetas de estadísticas,
+dos gráficos de barras diarios (alcance e interacción) y un selector de
+rango de fechas que filtra todo lo demás en la página. Se construyó
+siguiendo la skill `dataviz` de Claude — cargarla de nuevo
+(`Skill({ skill: "dataviz" })`) antes de tocar cualquier cosa relacionada
+a color, marcas o interacción de gráficos aquí.
+
+- **Sin backend todavía — datos de ejemplo deterministas.**
+  **Decisión y por qué:** el usuario pidió explícitamente "por ahora,
+  llénalo con datos de ejemplo realistas", así que `mock-data.ts` no
+  intenta conectarse a nada real (ni siquiera a los posts reales del
+  Gestor de Instagram — son módulos independientes a propósito, para no
+  fingir una integración que no existe). Los números no se generan con
+  `Math.random()`: cada día usa un hash de su fecha (`YYYY-MM-DD`) como
+  semilla de un PRNG (`mulberry32`), así que los valores son estables
+  entre renders y recargas de página en vez de cambiar cada vez que se
+  visita la página — importante para que el layout se vea consistente
+  mientras se revisa. Cada día tiene una tendencia lenta (`dayIndex` desde
+  un `ANCHOR_DATE` fijo de 2024-01-01), un patrón semanal (más
+  alcance/interacción viernes-domingo) y ruido aleatorio.
+  - **Bug real encontrado y corregido durante la construcción:** el
+    coeficiente de tendencia original de `engagementRate` (`+0.01` por
+    día) crecía sin límite porque `dayIndex` se mide desde una fecha fija
+    cada vez más lejana — para fechas ~1000 días después del ancla (osea,
+    "hoy" en 2026), el valor base ya superaba el techo del `clamp`
+    (9.5%), así que TODAS las barras del gráfico de interacción se veían
+    exactamente iguales (aplanadas contra el techo), sin importar el
+    ruido ni el patrón semanal. Se bajó el coeficiente a `+0.0015`/día.
+    Si se agrega alguna otra métrica con tendencia + `dayIndex` +
+    `clamp`, verificar que el coeficiente no sature el clamp en el
+    horizonte de fechas que la página realmente puede mostrar (los
+    presets llegan hasta 90 días atrás, pero el rango personalizado no
+    tiene límite superior de antigüedad más que `ANCHOR_DATE`).
+  - Cuando haya una fuente de datos real (API de Meta/Instagram, o un
+    backend propio), `mock-data.ts` es el único módulo que hay que
+    reemplazar — `analytics-view.tsx`, `bar-chart.tsx` y `stat-card.tsx`
+    no saben que los datos son sintéticos.
+- **El rango de fechas filtra todo.** `analytics-view.tsx` guarda el
+  `DateRangeValue` seleccionado en estado y recalcula, a partir de él,
+  la serie diaria del rango actual y la del "período anterior" de igual
+  duración (`getPreviousPeriod`) para los deltas de las tarjetas — así
+  las tarjetas y ambos gráficos siempre están mirando la misma ventana de
+  tiempo, tal como pide la skill `dataviz` ("los filtros aplican a todo
+  lo que está debajo").
+- **Selector de rango de fechas** (`date-range-picker.tsx`): un `Popover`
+  con presets como filas (Hoy, Últimos 7/30/90 días, Este mes), la
+  selección marcada con un ícono de check, y el rango personalizado
+  (dos `<input type="date">`) detrás de una línea divisoria en el pie —
+  siguiendo al pie de la letra el spec de `references/palette.md` y
+  `references/interaction.md` de la skill `dataviz` para controles de
+  fecha.
+- **Colores de las series** (`--chart-reach`, `--chart-engagement` en
+  `globals.css`): alcance usa el mismo violeta de `--primary` de la
+  marca; interacción usa un verde azulado nuevo. **Decisión:** ambos se
+  eligieron corriendo `scripts/validate_palette.js` de la skill `dataviz`
+  contra el fondo oscuro real del dashboard (`#09090b`) — pasan contraste
+  ≥3:1, separación bajo simulación de daltonismo (ΔE 21.8 deutan) y
+  separación de visión normal (ΔE 31.0), muy por encima de los pisos que
+  pide la skill. Como cada color vive en su propio gráfico (nunca
+  aparecen juntos con una leyenda compartida), no hace falta que compitan
+  contra las 8 categóricas por defecto de la skill — pero igual se
+  validaron como par para que, si en el futuro se combinan en una sola
+  vista, ya se sepa que funcionan juntos.
+- **Gráfico de barras hecho a mano** (`bar-chart.tsx`): ver la entrada
+  correspondiente en "Stack técnico" para el porqué de no usar una
+  librería. Implementa el spec de marcas de la skill al pie de la letra:
+  barra ≤24px de grosor, extremo superior redondeado a 4px y cuadrado en
+  la base (dibujado como `<path>`, no `<rect rx>`, para que solo las
+  esquinas de arriba se redondeen), gap de 2px entre barras, grillas en
+  gris apagado (`hsl(var(--border))`), y ticks del eje Y redondeados a
+  números "limpios" (0 / mitad / máximo). El tooltip aparece tanto en
+  hover como en foco de teclado (cada barra es un `<rect>` transparente
+  con `tabIndex={0}` y `aria-label` con la fecha y el valor, así que el
+  valor es alcanzable sin mouse y sin depender del tooltip visual). Cada
+  gráfico tiene un botón "Ver tabla" que cambia a una tabla HTML con los
+  mismos datos — el equivalente accesible que pide la skill.
+- **Sin agregación semanal.** Los rangos de hasta 90 días se grafican con
+  una barra por día (hasta 90 barras finas), no se agregan a semanas. Es
+  una decisión simple a propósito: la skill no lo exige, y agregar un
+  segundo modo de granularidad (diario vs. semanal) hoy sería complejidad
+  sin un pedido concreto detrás. Revisar si en algún momento el rango
+  personalizado permite ventanas mucho más largas (ej. un año) y 90+
+  barras finas se vuelven difíciles de leer.
+
 ## Navegación / comportamiento responsive
 
 - **Escritorio (`md:` en adelante):** un sidebar izquierdo fijo y siempre
@@ -276,6 +383,14 @@ diálogo para crear publicaciones nuevas.
   página (confirma que la persistencia en `localStorage` funciona); el
   layout responde bien tanto en escritorio (grid de 5 columnas) como en
   móvil (scroll horizontal de columnas).
+- Analítica verificado manualmente en navegador headless: los presets del
+  selector de fechas (Hoy, 7/30/90 días, Este mes) y el rango
+  personalizado recalculan las 4 tarjetas y ambos gráficos; el tooltip
+  aparece en hover y resalta la barra; el toggle "Ver tabla" funciona en
+  ambos gráficos; el caso límite de un solo día ("Hoy") no rompe nada
+  (barra centrada, sin errores en consola); el layout responde bien en
+  móvil. Este es también el proceso que encontró el bug de la tendencia
+  de `engagementRate` saturando el clamp — ver la sección de Analítica.
 
 ## Comandos
 

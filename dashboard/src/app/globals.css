@@ -40,6 +40,14 @@
     --sidebar-border: 240 4% 15%;
     --sidebar-accent: 240 4% 16%;
     --sidebar-accent-foreground: 0 0% 98%;
+
+    /* Colores de series para gráficos (validados con scripts/validate_palette.js
+       de la skill dataviz contra el fondo oscuro #09090b: contraste >=3:1,
+       separación CVD y de visión normal muy por encima de los pisos). */
+    --chart-reach: 262 83% 66%; /* = --primary */
+    --chart-reach-hover: 262 83% 76%;
+    --chart-engagement: 159 73% 36%;
+    --chart-engagement-hover: 159 73% 48%;
   }
 }
 
