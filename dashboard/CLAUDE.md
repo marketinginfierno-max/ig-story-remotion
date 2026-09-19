@@ -689,10 +689,25 @@ filtrables por tema.
   fallidas + estado vacío), sin romperse. Falta confirmar el camino feliz
   contra las URLs reales fuera de este sandbox.
 
-## Desplegar en un hosting con cPanel (sin Vercel)
+## Despliegue: Vercel además de cPanel
 
-El usuario tiene hosting propio (cPanel, con la sección "Node.js" / "Setup
-Node.js App" tipo Passenger) y prefirió usarlo en vez de Vercel. Ese panel
+Se probó primero cPanel (ver más abajo); en paralelo se conectó también
+el repo a **Vercel**, proyecto llamado "dashboard" en la cuenta del
+usuario, apuntando a este repo (`marketinginfierno-max/ig-story-remotion`)
+con **Root Directory = `dashboard`**, desplegando la rama de trabajo
+(`claude/funny-shannon-9t4gdf`) como preview deployment — no se encontró
+un campo "Production Branch" en la UI de Vercel que usó el usuario (puede
+que esa versión de la UI no lo exponga, o el flujo cambió), así que la
+rama de trabajo se despliega como preview en vez de production; para el
+uso actual (el usuario solo necesita una URL que funcione) esto es
+suficiente, no hace falta que sea "production" formalmente. Si más
+adelante se quiere una URL fija de producción, sea fusionando esta rama a
+`main` o configurando el production branch si aparece esa opción.
+
+## Desplegar en un hosting con cPanel (alternativa manual)
+
+El usuario tiene además hosting propio (cPanel, con la sección "Node.js" /
+"Setup Node.js App" tipo Passenger) y lo probó antes de Vercel. Ese panel
 no tenía "Terminal" — solo el Administrador de archivos y la pantalla de
 Node.js — así que no se puede correr `npm install` ni `npm run build` en
 el servidor. La solución fue el modo `output: "standalone"` de Next.js
