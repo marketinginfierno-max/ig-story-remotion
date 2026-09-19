@@ -689,6 +689,70 @@ filtrables por tema.
   fallidas + estado vacío), sin romperse. Falta confirmar el camino feliz
   contra las URLs reales fuera de este sandbox.
 
+## Desplegar en un hosting con cPanel (sin Vercel)
+
+El usuario tiene hosting propio (cPanel, con la sección "Node.js" / "Setup
+Node.js App" tipo Passenger) y prefirió usarlo en vez de Vercel. Ese panel
+no tenía "Terminal" — solo el Administrador de archivos y la pantalla de
+Node.js — así que no se puede correr `npm install` ni `npm run build` en
+el servidor. La solución fue el modo `output: "standalone"` de Next.js
+(activado en `next.config.mjs`).
+
+- **Qué hace `output: "standalone"`:** al correr `npm run build`, además
+  del build normal genera `.next/standalone/` — una carpeta autocontenida
+  con su propio `server.js` (generado por Next, no el `server.js` de la
+  raíz del proyecto — ver el punto siguiente) y **solo** los
+  `node_modules` que se usan de verdad en producción (no las
+  devDependencies ni nada de build-time). Está pensada exactamente para
+  este caso: hostings donde no se puede correr `npm install` en el
+  servidor. Hay que copiar a mano `.next/static` adentro de
+  `.next/standalone/.next/static` (y `public/` si existiera — este
+  proyecto no tiene carpeta `public/`) porque el modo standalone no los
+  incluye solo, para no duplicar esos archivos en otros modos de
+  despliegue.
+- **Dos `server.js` distintos, a propósito:**
+  - `dashboard/server.js` (en la raíz del proyecto, committeado): para un
+    hosting que sí tiene terminal/SSH y puede correr
+    `npm install && npm run build && node server.js` directo, sin modo
+    standalone.
+  - `.next/standalone/server.js`: generado automáticamente por Next en
+    cada build standalone, no se edita a mano ni se committea (vive
+    dentro de `.next/`, que está en `.gitignore`). Es el que se usa en el
+    despliegue real a Tecno Inver.
+- **Proceso para generar el paquete a subir** (lo hace Claude, no es algo
+  que el usuario tenga que correr):
+  ```bash
+  cd dashboard
+  rm -rf .next
+  npm run build
+  cp -r .next/static .next/standalone/.next/static
+  # empaquetar .next/standalone/ (con ese contenido) en un .zip y
+  # mandárselo al usuario para que lo suba por el Administrador de
+  # archivos de cPanel.
+  ```
+- **Pasos que hace el usuario en cPanel** (repetir cada vez que Claude
+  manda un .zip nuevo):
+  1. Administrador de archivos → subir el `.zip` → extraerlo.
+  2. Node.js → "Create Application" (o editar la app ya creada):
+     - Versión de Node.js: 18.x o más nueva (Next 14 pide >=18.17).
+     - Modo: Production.
+     - Application root: la carpeta donde se extrajo el `.zip`.
+     - Application startup file: `server.js` (relativo a esa carpeta).
+     - Application URL: el dominio o subdominio donde se quiere ver el
+       dashboard.
+  3. **No hace falta tocar "Run NPM Install"** — todo lo necesario ya
+     viene adentro del `.zip`. Si ya existe una versión previa corriendo,
+     alcanza con "Restart".
+  4. No hacen falta variables de entorno — el proyecto no usa ninguna
+     todavía.
+- Cada vez que se agregue una sección o se cambie algo, hay que repetir
+  el proceso completo (rebuild acá, nuevo `.zip`, el usuario lo sube y le
+  da "Restart") — este hosting no se actualiza solo con cada `git push`
+  como pasaría con Vercel. Si en algún momento se vuelve tedioso, ese es
+  el argumento a favor de reconsiderar Vercel (o de configurar un cron
+  de cPanel que haga `git pull` + build si el hosting lo permite — no
+  evaluado todavía).
+
 ## Comandos
 
 ```bash
@@ -697,4 +761,5 @@ npm install
 npm run dev      # http://localhost:3000
 npm run build
 npm run lint
+npm run start:cpanel  # node server.js — para probar el server.js de la raíz, no el standalone
 ```
