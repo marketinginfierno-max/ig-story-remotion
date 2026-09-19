@@ -1,4 +1,4 @@
-import { addDays, diffInDays, toISODate } from "./mock-data";
+import { addDays, diffInDays, toISODate, today } from "@/lib/date";
 
 export type DateRangePreset = "today" | "7d" | "30d" | "90d" | "month" | "custom";
 
@@ -24,14 +24,6 @@ export const PRESET_ORDER: Exclude<DateRangePreset, "custom">[] = [
   "90d",
   "month",
 ];
-
-function startOfDayUTC(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
-
-export function today(): Date {
-  return startOfDayUTC(new Date());
-}
 
 export function getPresetRange(preset: Exclude<DateRangePreset, "custom">): DateRangeValue {
   const end = today();

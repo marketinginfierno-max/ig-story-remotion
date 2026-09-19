@@ -9,13 +9,8 @@ import { StatCard, type StatDelta } from "./stat-card";
 import { BarChart } from "./bar-chart";
 import { DateRangePicker } from "./date-range-picker";
 import { getPresetRange, getPreviousPeriod, type DateRangeValue } from "./date-range";
-import {
-  addDays,
-  followersAt,
-  formatCompactNumber,
-  formatPercent,
-  seriesForRange,
-} from "./mock-data";
+import { followersAt, formatCompactNumber, formatPercent, seriesForRange } from "./mock-data";
+import { addDays } from "@/lib/date";
 
 function percentChange(current: number, previous: number): number {
   if (previous === 0) return current === 0 ? 0 : 100;

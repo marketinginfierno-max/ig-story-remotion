@@ -26,11 +26,12 @@ secciones detrás de un sidebar compartido:
 - **Seguimiento de Competencia** (`/competitors`)
 - **Feed de Noticias** (`/news`)
 
-El **Gestor de Instagram** y **Analítica** ya tienen funcionalidad real (ver
-las secciones dedicadas más abajo); las otras tres secciones siguen siendo
-un placeholder estático (tarjeta "Próximamente") — todavía no hay obtención
-de datos, autenticación ni integración con backend. La ruta `/` es una
-página de resumen con tarjetas que enlazan a cada sección.
+El **Gestor de Instagram**, **Analítica** y **Calendario de Contenido** ya
+tienen funcionalidad real (ver las secciones dedicadas más abajo); las
+otras dos secciones siguen siendo un placeholder estático (tarjeta
+"Próximamente") — todavía no hay obtención de datos, autenticación ni
+integración con backend. La ruta `/` es una página de resumen con
+tarjetas que enlazan a cada sección.
 
 ## Dónde vive esto en el repositorio
 
@@ -137,7 +138,7 @@ dashboard/
 │   │   ├── globals.css           # directivas de Tailwind + variables CSS de shadcn (solo oscuro)
 │   │   ├── instagram/page.tsx    # Gestor de Instagram — funcional (ver sección dedicada)
 │   │   ├── analytics/page.tsx    # Analítica — funcional (ver sección dedicada)
-│   │   ├── calendar/page.tsx     # placeholder de Calendario de Contenido
+│   │   ├── calendar/page.tsx     # Calendario de Contenido — funcional (ver sección dedicada)
 │   │   ├── competitors/page.tsx  # placeholder de Seguimiento de Competencia
 │   │   └── news/page.tsx         # placeholder de Feed de Noticias
 │   ├── components/
@@ -156,15 +157,25 @@ dashboard/
 │   │   │   ├── status-column.tsx # una columna del tablero (encabezado + tarjetas de ese estado)
 │   │   │   ├── post-card.tsx     # tarjeta individual de una publicación
 │   │   │   └── new-post-dialog.tsx # formulario modal para crear una publicación
-│   │   └── analytics/            # todo lo específico de Analítica (ver sección dedicada)
-│   │       ├── mock-data.ts      # generador de datos de ejemplo deterministas (sin backend todavía)
-│   │       ├── date-range.ts     # presets de rango de fechas + cálculo del período anterior
-│   │       ├── date-range-picker.tsx # popover con presets + rango personalizado
-│   │       ├── stat-card.tsx     # tarjeta de estadística (ícono, label, valor, delta)
-│   │       ├── bar-chart.tsx     # gráfico de barras SVG hecho a mano (ver "Stack técnico")
-│   │       └── analytics-view.tsx # orquestador: header + date picker + stat cards + los dos gráficos
+│   │   ├── analytics/            # todo lo específico de Analítica (ver sección dedicada)
+│   │   │   ├── mock-data.ts      # generador de datos de ejemplo deterministas (sin backend todavía)
+│   │   │   ├── date-range.ts     # presets de rango de fechas + cálculo del período anterior
+│   │   │   ├── date-range-picker.tsx # popover con presets + rango personalizado
+│   │   │   ├── stat-card.tsx     # tarjeta de estadística (ícono, label, valor, delta)
+│   │   │   ├── bar-chart.tsx     # gráfico de barras SVG hecho a mano (ver "Stack técnico")
+│   │   │   └── analytics-view.tsx # orquestador: header + date picker + stat cards + los dos gráficos
+│   │   └── calendar/             # todo lo específico del Calendario de Contenido (ver sección dedicada)
+│   │       ├── types.ts          # tipo Platform/ContentItem + labels, íconos y color por plataforma
+│   │       ├── seed-items.ts     # contenido de ejemplo, con fechas relativas a "hoy"
+│   │       ├── platform-filter.tsx # fila de botones para filtrar por plataforma (multi-selección)
+│   │       ├── content-chip.tsx  # chip de un item dentro de una celda del calendario
+│   │       ├── day-cell.tsx      # una celda del calendario (número de día + chips + "+N más")
+│   │       ├── month-grid.tsx    # arma la grilla de 6x7 días y los encabezados de la semana
+│   │       ├── day-items-dialog.tsx # diálogo con el detalle completo de un día
+│   │       └── calendar-view.tsx # orquestador: header + navegación de mes + filtro + grilla
 │   └── lib/
-│       └── utils.ts              # cn() — clsx + tailwind-merge
+│       ├── utils.ts              # cn() — clsx + tailwind-merge
+│       └── date.ts               # helpers de fecha compartidos (addDays, diffInDays, toISODate, today, startOfMonth, addMonths)
 ```
 
 **Decisión:** cada página de sección sigue el mismo patrón de dos piezas —
@@ -335,6 +346,81 @@ a color, marcas o interacción de gráficos aquí.
   personalizado permite ventanas mucho más largas (ej. un año) y 90+
   barras finas se vuelven difíciles de leer.
 
+## Calendario de Contenido (`/calendar`)
+
+Tercera sección con funcionalidad real. Vista mensual (grilla de 6x7 días,
+semana empieza en lunes), navegación entre meses, botón "Hoy", y cada día
+puede mostrar varios items de contenido como chips coloreados por
+plataforma. Filtro de plataforma (multi-selección) arriba de la grilla,
+que oculta los chips de las plataformas desactivadas en toda la vista.
+
+- **Modelo de datos independiente del Gestor de Instagram — a propósito.**
+  **Decisión y por qué:** al principio iba a hacer que el calendario
+  mostrara los `scheduledDate` de los posts reales del Gestor de
+  Instagram (`usePosts`), ya que el modelo ya existía. Pero el pedido de
+  color-codificar y filtrar **por plataforma** (Instagram, TikTok,
+  Facebook, X) no encaja con `Post`, que es explícitamente solo de
+  Instagram (no tiene ni necesita un campo `platform`). Se optó por un
+  modelo propio en `src/components/calendar/types.ts`
+  (`Platform`, `ContentItem { id, title, platform, date }`), separado del
+  de Instagram. Son secciones conceptualmente distintas: el Gestor de
+  Instagram administra el detalle de publicaciones de una sola red; el
+  Calendario de Contenido es una vista de planificación cruzada entre
+  redes. Si en el futuro se quiere que los posts de Instagram aparezcan
+  también en este calendario, el punto de unión sería agregar un
+  `platform: "instagram"` implícito a cada `Post` y fusionar ambas listas
+  en `calendar-view.tsx` — no fusionar los tipos.
+- **Plataformas soportadas:** Instagram, TikTok, Facebook y X — las
+  cuatro más comunes, fácil de ampliar agregando un valor a `Platform` y
+  sus entradas en `PLATFORM_LABELS`/`PLATFORM_ICONS`/las variables CSS de
+  color.
+- **Sin backend todavía — datos de ejemplo estáticos, sin `localStorage`.**
+  A diferencia del Gestor de Instagram, esta página es de solo lectura
+  (no se pidió un formulario para agregar contenido), así que
+  `seed-items.ts` no necesita persistencia — simplemente recalcula fechas
+  relativas a `today()` en cada carga (`offset` en días desde hoy), para
+  que siempre haya contenido visible en el mes actual sin importar cuándo
+  se abra la página. Si más adelante se agrega un formulario para crear
+  items, ahí sí va a hacer falta el mismo patrón de `localStorage` con
+  hidratación que usa `use-posts.ts` en el Gestor de Instagram.
+- **Colores por plataforma con codificación secundaria obligatoria.**
+  **Decisión y por qué:** se necesitaban 4 colores categóricos que
+  conviven en la misma vista (los chips de cualquier plataforma pueden
+  quedar uno al lado del otro en cualquier celda), así que se validaron
+  con `--pairs all` de `scripts/validate_palette.js` de la skill
+  `dataviz` — no alcanza con validar solo pares adyacentes. La skill
+  documenta que su paleta de 8 tonos por defecto solo garantiza las 3
+  primeras posiciones "todos contra todos" en ambos modos; probé varias
+  combinaciones de 4 y ninguna pasa limpio. La que mejor validó
+  (`--platform-instagram: 338 61% 58%` magenta, `--platform-facebook: 213
+  77% 56%` azul, `--platform-tiktok: 40 100% 39%` ámbar, `--platform-x:
+  120 100% 26%` verde, en `globals.css`) pasa separación de visión normal
+  (ΔE 19.3, sobre el piso de 15) pero queda en la banda 6.9 de separación
+  CVD, que la skill permite **solo con codificación secundaria**. Por eso
+  cada chip (`content-chip.tsx`) y cada fila del filtro
+  (`platform-filter.tsx`) siempre llevan un ícono distinto por plataforma
+  además del color — nunca solo el color — y el diálogo de detalle del
+  día también repite el nombre de la plataforma en texto. No agregar una
+  quinta plataforma sin volver a correr el validador.
+- **Íconos por plataforma** (`PLATFORM_ICONS` en `types.ts`): como
+  `lucide-react` no tiene íconos de marca, se usan genéricos — `Camera`
+  para Instagram (mismo ícono que ya usa el sidebar), `Music2` para
+  TikTok, `Users` para Facebook, `Hash` para X.
+- **Chips responsive:** en pantallas angostas (`<sm`) el texto del chip
+  se oculta (`hidden sm:inline`) y solo queda el ícono coloreado — con 7
+  columnas en una pantalla de celular no alcanza el espacio para texto
+  legible, y el texto truncado a una sola letra no aporta nada. Tocar el
+  día igual abre el diálogo con el detalle completo (título + plataforma
+  en texto) para cualquier tamaño de pantalla.
+- **Extracción de utilidades de fecha a `src/lib/date.ts`.** Antes
+  `addDays`/`diffInDays`/`toISODate`/`today` vivían dentro de
+  `analytics/mock-data.ts` y `analytics/date-range.ts`. El calendario
+  también los necesita (`startOfMonth`, `addMonths` se agregaron ahí
+  mismo) y hubiera sido raro que `calendar/` importara utilidades
+  genéricas desde adentro de `analytics/`. Se movieron a `lib/date.ts`
+  como el lugar neutral correcto, y `analytics/` se actualizó para
+  importar desde ahí en vez de definirlas.
+
 ## Navegación / comportamiento responsive
 
 - **Escritorio (`md:` en adelante):** un sidebar izquierdo fijo y siempre
@@ -391,6 +477,14 @@ a color, marcas o interacción de gráficos aquí.
   (barra centrada, sin errores en consola); el layout responde bien en
   móvil. Este es también el proceso que encontró el bug de la tendencia
   de `engagementRate` saturando el clamp — ver la sección de Analítica.
+- Calendario de Contenido verificado manualmente en navegador headless:
+  la grilla muestra el mes actual con "hoy" resaltado; navegar entre
+  meses y volver con "Hoy" funciona; desactivar una plataforma en el
+  filtro oculta sus chips en toda la grilla sin errores; hacer clic en un
+  día con varios items abre el diálogo con el detalle completo (ícono +
+  título + nombre de plataforma); en móvil los chips colapsan a solo
+  ícono (sin texto truncado a una letra) y tocar el día sigue mostrando
+  el detalle completo.
 
 ## Comandos
 

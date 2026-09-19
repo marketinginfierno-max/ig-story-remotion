@@ -17,10 +17,9 @@ import {
   PRESET_ORDER,
   formatRangeLabel,
   getPresetRange,
-  today,
   type DateRangeValue,
 } from "./date-range";
-import { toISODate } from "./mock-data";
+import { today, toISODate } from "@/lib/date";
 
 interface DateRangePickerProps {
   value: DateRangeValue;

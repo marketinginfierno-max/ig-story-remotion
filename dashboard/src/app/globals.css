@@ -48,6 +48,19 @@
     --chart-reach-hover: 262 83% 76%;
     --chart-engagement: 159 73% 36%;
     --chart-engagement-hover: 159 73% 48%;
+
+    /* Colores por plataforma para el Calendario de Contenido. Validados en
+       conjunto con scripts/validate_palette.js de la skill dataviz, modo
+       dark, contra la superficie de las tarjetas (#18181b), con --pairs all
+       (los chips de cualquier plataforma pueden quedar lado a lado). Pasan
+       separación de visión normal (ΔE 19.3) pero quedan en la banda 6.9 de
+       CVD ("legal solo con codificación secundaria") — por eso cada chip
+       lleva también un ícono distinto por plataforma, nunca solo el color.
+       Ver CLAUDE.md, sección "Calendario de Contenido". */
+    --platform-instagram: 338 61% 58%;
+    --platform-facebook: 213 77% 56%;
+    --platform-tiktok: 40 100% 39%;
+    --platform-x: 120 100% 26%;
   }
 }
 
