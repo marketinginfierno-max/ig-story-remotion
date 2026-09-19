@@ -17,22 +17,19 @@ principio.
 
 ## Qué es esto
 
-Un dashboard de operación de contenido, aún en modo placeholder, con cinco
-secciones detrás de un sidebar compartido:
+Un dashboard de operación de contenido con cinco secciones detrás de un
+sidebar compartido, las cinco con funcionalidad real:
 
 - **Gestor de Instagram** (`/instagram`)
 - **Analítica** (`/analytics`)
 - **Calendario de Contenido** (`/calendar`)
 - **Seguimiento de Competencia** (`/competitors`)
-- **Feed de Noticias** (`/news`)
+- **Feed de Noticias** (`/news`) — la única que trae datos reales de
+  internet (RSS); las otras cuatro siguen usando datos de ejemplo, sin
+  backend propio todavía.
 
-El **Gestor de Instagram**, **Analítica**, **Calendario de Contenido** y
-**Seguimiento de Competencia** ya tienen funcionalidad real (ver las
-secciones dedicadas más abajo); **Feed de Noticias** sigue siendo un
-placeholder estático (tarjeta "Próximamente") — todavía no hay obtención
-de datos, autenticación ni integración con backend real en ninguna
-sección. La ruta `/` es una página de resumen con tarjetas que enlazan a
-cada sección.
+La ruta `/` es una página de resumen con tarjetas que enlazan a cada
+sección.
 
 ## Dónde vive esto en el repositorio
 
@@ -111,6 +108,10 @@ incompatibles. Todos los comandos del dashboard se ejecutan desde dentro de
   gráficos más complejos más adelante (líneas multi-serie, áreas
   apiladas, heatmaps), evaluar entonces si conviene sumar una librería —
   para dos gráficos de barras de una sola serie no se justificaba.
+- **fast-xml-parser.** Única dependencia nueva para Feed de Noticias:
+  convierte el XML de un feed RSS/Atom en un objeto JS. Es la única
+  sección que trae datos reales de internet en vez de datos de ejemplo —
+  ver la sección dedicada más abajo.
 
 ## Tema oscuro
 
@@ -141,15 +142,15 @@ dashboard/
 │   │   ├── analytics/page.tsx    # Analítica — funcional (ver sección dedicada)
 │   │   ├── calendar/page.tsx     # Calendario de Contenido — funcional (ver sección dedicada)
 │   │   ├── competitors/page.tsx  # Seguimiento de Competencia — funcional (ver sección dedicada)
-│   │   └── news/page.tsx         # placeholder de Feed de Noticias
+│   │   ├── news/page.tsx         # Feed de Noticias — funcional (ver sección dedicada)
+│   │   └── api/news/route.ts     # Route Handler: trae y combina los feeds RSS en el servidor
 │   ├── components/
 │   │   ├── ui/                   # primitivos de shadcn/ui escritos a mano (button, card, badge, separator, dialog, input, textarea, label, select, popover)
 │   │   ├── layout/
 │   │   │   ├── nav-items.ts      # única fuente de verdad para los links del sidebar/menú móvil (title, href, icon, description)
 │   │   │   ├── sidebar.tsx       # sidebar fijo de escritorio (md+), resalta el link activo vía usePathname
 │   │   │   ├── mobile-nav.tsx    # barra superior + menú desplegable que se muestra por debajo del breakpoint md
-│   │   │   ├── page-header.tsx   # encabezado compartido "<Título> [badge opcional] + descripción" para las páginas
-│   │   │   └── coming-soon.tsx   # cuerpo placeholder compartido (tarjeta punteada) para las páginas sin funcionalidad aún
+│   │   │   └── page-header.tsx   # encabezado compartido "<Título> [badge opcional] + descripción" para las páginas
 │   │   ├── instagram/            # todo lo específico del Gestor de Instagram (ver sección dedicada)
 │   │   │   ├── types.ts          # tipos Post/PostType/PostStatus + labels e íconos en español
 │   │   │   ├── seed-posts.ts     # publicaciones de ejemplo iniciales
@@ -174,14 +175,24 @@ dashboard/
 │   │   │   ├── month-grid.tsx    # arma la grilla de 6x7 días y los encabezados de la semana
 │   │   │   ├── day-items-dialog.tsx # diálogo con el detalle completo de un día
 │   │   │   └── calendar-view.tsx # orquestador: header + navegación de mes + filtro + grilla
-│   │   └── competitors/          # todo lo específico de Seguimiento de Competencia (ver sección dedicada)
-│   │       ├── types.ts          # tipo Competitor + SortKey/SortState para la tabla
-│   │       ├── mock-data.ts      # genera estadísticas de ejemplo a partir de un hash del handle
-│   │       ├── use-competitors.ts # hook de estado + persistencia en localStorage
-│   │       ├── competitors-table.tsx # tabla ordenable (clic en cualquier columna)
-│   │       ├── growth-delta.tsx  # crecimiento con flecha + color (subida = verde, bajada = roja)
-│   │       ├── add-competitor-dialog.tsx # formulario modal para agregar un handle
-│   │       └── data-source-note.tsx # nota visible en la página sobre dónde conectar datos reales
+│   │   ├── competitors/          # todo lo específico de Seguimiento de Competencia (ver sección dedicada)
+│   │   │   ├── types.ts          # tipo Competitor + SortKey/SortState para la tabla
+│   │   │   ├── mock-data.ts      # genera estadísticas de ejemplo a partir de un hash del handle
+│   │   │   ├── use-competitors.ts # hook de estado + persistencia en localStorage
+│   │   │   ├── competitors-table.tsx # tabla ordenable (clic en cualquier columna)
+│   │   │   ├── growth-delta.tsx  # crecimiento con flecha + color (subida = verde, bajada = roja)
+│   │   │   ├── add-competitor-dialog.tsx # formulario modal para agregar un handle
+│   │   │   └── data-source-note.tsx # nota visible en la página sobre dónde conectar datos reales
+│   │   └── news/                 # todo lo específico del Feed de Noticias (ver sección dedicada)
+│   │       ├── types.ts          # tipo NewsTopic/NewsItem + labels e íconos por tema
+│   │       ├── feeds.ts          # config editable: qué URL de RSS trae cada tema
+│   │       ├── parse-rss.ts      # XML (RSS 2.0 o Atom) -> NewsItem[], sin depender del formato exacto
+│   │       ├── use-news.ts       # hook: fetch a /api/news + estado loading/success/error
+│   │       ├── topic-filter.tsx  # fila de botones para filtrar por tema (multi-selección)
+│   │       ├── news-card.tsx     # tarjeta de una noticia (link a la fuente original)
+│   │       ├── news-skeleton.tsx # tarjeta placeholder animada mientras carga
+│   │       ├── format-published.ts # fecha de publicación relativa ("hace 3 h") o absoluta
+│   │       └── news-feed-view.tsx # orquestador: header + botón actualizar + filtro + grilla
 │   └── lib/
 │       ├── utils.ts              # cn() — clsx + tailwind-merge
 │       ├── date.ts               # helpers de fecha compartidos (addDays, diffInDays, toISODate, today, startOfMonth, addMonths)
@@ -204,23 +215,22 @@ para usarlo). Si una tercera sección necesita generar datos de ejemplo
 deterministas o persistir estado en `localStorage`, usar estos módulos en
 vez de reinventarlos.
 
-**Decisión:** cada página de sección sigue el mismo patrón de dos piezas —
-`PageHeader` (título + badge "Próximamente" + descripción) seguido de
-`ComingSoon` (ícono + una línea describiendo qué vivirá ahí eventualmente).
-Esto hace que las cinco páginas placeholder sean triviales de extender
-después: cuando una sección tenga funcionalidad real, se reemplaza el
-`<ComingSoon />` por contenido real y se deja `PageHeader` tal cual.
-
 **Decisión:** `navItems` en `nav-items.ts` es la única fuente de verdad
 para el sidebar — tanto `sidebar.tsx` (escritorio) como `mobile-nav.tsx`
 (móvil) lo importan, así que agregar/reordenar/renombrar una sección solo
 requiere editar ese arreglo.
 
-**Decisión:** `PageHeader` recibe un `badge` opcional (antes era fijo,
-siempre mostraba "Próximamente"). Las cuatro páginas que siguen siendo
-placeholder pasan `badge="Próximamente"` explícitamente; el Gestor de
-Instagram (con funcionalidad real) y la página de resumen no pasan badge,
-así que no se muestra ninguno.
+**Historial:** hasta la primera versión de este dashboard, cada página sin
+funcionalidad real seguía el mismo patrón de dos piezas — `PageHeader`
+con `badge="Próximamente"` seguido de un componente `ComingSoon`
+(ícono + una línea). Las cinco secciones ya tienen funcionalidad real, así
+que ese patrón dejó de usarse: se borró `coming-soon.tsx` (había quedado
+sin ningún uso — código muerto) y ninguna página pasa `badge` hoy.
+`PageHeader` conserva el prop `badge` opcional por si en el futuro se
+agrega una sección nueva todavía sin funcionalidad — en ese caso, ese es
+el patrón a repetir (y si `ComingSoon` hace falta de nuevo, recrearlo es
+trivial: ver el diff de cuando se reemplazó cada sección en el historial
+de git).
 
 ## Gestor de Instagram (`/instagram`)
 
@@ -492,6 +502,97 @@ un diálogo para sumar un handle nuevo.
   mismo patrón de `addCompetitor` en `use-competitors.ts` (un
   `removeCompetitor` que filtra por `id`).
 
+## Feed de Noticias (`/news`)
+
+Quinta sección con funcionalidad real, y la única que trae **datos reales
+de internet** en vez de datos de ejemplo — trae y combina varios feeds
+RSS reales del rubro gourmet (café, té, delicatessen), en tarjetas
+filtrables por tema.
+
+- **Nicho: café, té y delicatessen/gourmet.** El pedido original decía
+  literalmente "[your niche]" sin completar (una plantilla/guía copiada
+  sin editar); se le preguntó al usuario y confirmó gastronomía en
+  general primero, y después lo acotó a "gourmet (tea, coffee,
+  delicatessen)" en su siguiente mensaje — eso es lo que quedó
+  implementado. `TOPIC_ORDER` en `types.ts` es el lugar para agregar o
+  sacar temas si esto cambia.
+- **El fetch corre en el servidor, nunca en el navegador — no es
+  opcional.** **Decisión y por qué:** la mayoría de los feeds RSS no
+  mandan headers CORS, así que un `fetch` hecho desde un componente de
+  cliente fallaría directo en el navegador contra casi cualquier fuente
+  real. Por eso existe `src/app/api/news/route.ts`, un Route Handler de
+  Next.js (corre en el servidor) que trae cada feed, los parsea y le
+  devuelve al cliente JSON ya combinado y ordenado. `use-news.ts` en el
+  cliente solo le pega a `/api/news` (mismo origen, sin problema de
+  CORS). Si se agrega una fuente nueva, siempre va en `feeds.ts` y se
+  trae desde la ruta de API — nunca directo desde un componente cliente.
+- **Fuentes reales configuradas en `feeds.ts`:** tres feeds de Google
+  News por tema (`news.google.com/rss/search?q=...`), no blogs
+  individuales. **Decisión y por qué:** Google News RSS es un endpoint
+  público muy estable y bien documentado que agrega muchas fuentes reales
+  del rubro (Sprudge, Daily Coffee News, World Tea News, etc.) sin
+  depender de que un blog puntual no haya cambiado de plataforma, no
+  bloquee bots, o no haya movido su URL de feed — cosas que no se podían
+  verificar desde este entorno (ver el punto siguiente). `feeds.ts` tiene
+  en comentarios cómo sumar una fuente directa de un sitio específico del
+  rubro (por ejemplo Sprudge o Daily Coffee News) el día que se confirme
+  que esa URL de feed responde bien.
+- **Limitación real de este entorno: no se pudo probar el fetch en vivo.**
+  **Esto hay que saberlo antes de tocar este código.** La política de red
+  saliente de este sandbox de desarrollo bloquea cualquier dominio fuera
+  de una lista corta (`registry.npmjs.org`, `pypi.org`, etc. — la misma
+  razón por la que `ui.shadcn.com` está bloqueado, ver "Stack técnico").
+  Se probó con `curl` contra `news.google.com`, `sprudge.com` y varios
+  blogs candidatos del rubro y **todos** devolvieron 403 a nivel de
+  proxy — no es que esas fuentes específicas fallen, es que este sandbox
+  no deja salir a ningún dominio arbitrario. La función de parseo
+  (`parse-rss.ts`) se validó aparte, corriendo `fast-xml-parser`
+  directamente contra fixtures de RSS 2.0 (formato Google News y formato
+  WordPress genérico) y Atom escritos a mano que imitan la estructura
+  real de esos formatos — así que la lógica de parseo está probada, pero
+  el fetch en vivo contra las URLs reales **todavía no se verificó fuera
+  de este sandbox**. Cuando esto se despliegue en un entorno con salida a
+  internet normal (Vercel, la computadora del usuario, etc.), verificar
+  una vez que `/api/news` efectivamente trae resultados — si Google News
+  cambiara su formato de RSS o alguna query dejara de traer resultados,
+  ese es el primer lugar donde mirar.
+- **Google News RSS repite el título en la descripción — se detecta y se
+  descarta.** Al armar el fixture de prueba (a partir de ejemplos reales
+  conocidos de Google News RSS) se notó que su `<description>` no es un
+  resumen real: es el título de vuelta más el nombre de la fuente pegado
+  al final. `dedupeSummary()` en `parse-rss.ts` detecta cuando el
+  "resumen" arranca igual que el título y lo descarta — la tarjeta
+  (`news-card.tsx`) simplemente no muestra el párrafo de resumen en ese
+  caso, en vez de mostrar el título duplicado como si fuera un resumen.
+  Los feeds que si traen un resumen real (formato WordPress típico, Atom)
+  no se ven afectados.
+- **Resiliente por fuente, no todo-o-nada.** `route.ts` usa
+  `Promise.allSettled` sobre los tres feeds — si uno falla (o los tres),
+  los que sí respondieron se muestran igual, y `failedSources` en la
+  respuesta lista cuáles fallaron para que la página lo muestre como una
+  nota chica, no como un error bloqueante. Se verificó exactamente este
+  camino en este sandbox (ya que acá los tres feeds fallan siempre por la
+  limitación de red): la página muestra la nota de fuentes fallidas y un
+  estado vacío prolijo, sin romperse.
+- **Caché de 15 minutos** (`NEWS_CACHE_SECONDS` en `feeds.ts`), vía la
+  opción `next: { revalidate }` del `fetch` de Next.js — para no golpear
+  los feeds reales en cada carga de la página.
+- **Filtro por tema, sin colores por tema.** A diferencia del Calendario
+  (que sí necesitaba color por plataforma porque los chips conviven sin
+  espacio para texto), acá cada botón de filtro y cada tarjeta ya llevan
+  ícono + texto siempre visibles, así que no hacía falta validar una
+  paleta categórica nueva — se usó el mismo tratamiento de "activo" que
+  ya usa el resto de la app (fondo con tinte de `--primary`).
+- **Filtrado client-side, sin re-fetch.** Cambiar de tema no dispara una
+  llamada nueva a `/api/news` — se filtra el arreglo ya cargado en
+  memoria. Coherente con la skill `dataviz` aunque esto no sea un
+  gráfico: cambiar un filtro nunca debería mostrar un skeleton de nuevo.
+- **Estados de carga/error explícitos** (`news-feed-view.tsx`): skeleton
+  animado mientras `status === "loading"`, tarjeta de error con botón
+  "Reintentar" si el fetch a `/api/news` falla del todo, y "no hay
+  noticias para los temas seleccionados" si el filtro no deja nada. El
+  botón "Actualizar" del header dispara un refetch manual.
+
 ## Navegación / comportamiento responsive
 
 - **Escritorio (`md:` en adelante):** un sidebar izquierdo fijo y siempre
@@ -518,6 +619,17 @@ un diálogo para sumar un handle nuevo.
   que `npx shadcn add ...` va a funcionar; para agregar primitivos nuevos,
   escribirlos a mano siguiendo la configuración de `components.json`
   (style: `new-york`, base color: `neutral`, css variables: activadas).
+- **Cualquier dominio fuera de una lista corta (`registry.npmjs.org`,
+  `pypi.org`, etc.) está bloqueado por la misma política de proxy** — no
+  solo `ui.shadcn.com`. Se confirmó probando con `curl` contra
+  `news.google.com`, `sprudge.com` y otros sitios del rubro gourmet para
+  Feed de Noticias: los tres devolvieron 403 a nivel de proxy. Esto
+  importa para cualquier función que necesite `fetch` a internet en algún
+  momento futuro (no solo RSS) — no se va a poder probar el fetch en vivo
+  desde este sandbox de desarrollo; sí va a funcionar una vez desplegado
+  en un entorno normal (Vercel, la computadora de quien lo use, etc.).
+  Ver la sección "Feed de Noticias" para cómo se validó la lógica de
+  todos modos (con fixtures, sin red real).
 - `npm audit` reporta vulnerabilidades preexistentes heredadas de las
   propias devDependencies de la plantilla `create-next-app@14` (deps
   transitivas antiguas de `eslint`/`glob`). No se abordaron aquí —
@@ -562,6 +674,20 @@ un diálogo para sumar un handle nuevo.
   suma a la tabla con estadísticas coherentes entre sí; el competidor
   agregado persiste después de recargar la página (confirma
   `localStorage`); sin errores en consola.
+- Feed de Noticias verificado en dos partes, por la limitación de red de
+  este sandbox (ver "Limitaciones"): (1) la ruta de API y el parseo se
+  probaron end-to-end sirviendo los fixtures de RSS/Atom desde un
+  servidor HTTP local y apuntando `feeds.ts` ahí temporalmente — la
+  página mostró las tarjetas correctamente (badge de tema, headline,
+  fuente, fecha, resumen cuando lo hay, sin resumen duplicado en los
+  ítems estilo Google News), el filtro por tema funcionó sin re-fetch, y
+  el layout respondió bien en móvil; después se revirtió `feeds.ts` a las
+  URLs reales de Google News. (2) Contra las URLs reales (que fallan acá
+  por la red del sandbox, no por un bug), se confirmó que `/api/news`
+  responde `200` con `items: []` y `failedSources` listando las tres
+  fuentes, y que la página lo muestra de forma prolija (nota de fuentes
+  fallidas + estado vacío), sin romperse. Falta confirmar el camino feliz
+  contra las URLs reales fuera de este sandbox.
 
 ## Comandos
 
